@@ -25,16 +25,18 @@ import {
   ArrowLeft,
   CheckCircle2,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
 import CaptionPreview from '../components/lora-trainer/CaptionPreview';
+import CaptionTemplates from '../components/lora-trainer/CaptionTemplates';
 import MetadataExtractor from '../components/lora-trainer/MetadataExtractor';
 import TrainingPlanner from '../components/lora-trainer/TrainingPlanner';
 import TriggerManager from '../components/lora-trainer/TriggerManager';
 import SessionHistory from '../components/lora-trainer/SessionHistory';
 
-type TabId = 'sessions' | 'pipeline' | 'captions' | 'metadata' | 'planner' | 'trigger';
+type TabId = 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger';
 
 interface Tab {
   id: TabId;
@@ -47,6 +49,7 @@ const TABS: Tab[] = [
   { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, description: 'Gestión de sesiones' },
   { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, description: 'Ejecutar pipeline Python' },
   { id: 'captions', label: 'Captions', icon: <FileText className="w-4 h-4" />, description: 'Previsualizar y editar' },
+  { id: 'templates', label: 'Plantillas', icon: <Sparkles className="w-4 h-4" />, description: 'Captions por categorías' },
   { id: 'metadata', label: 'Metadata', icon: <Info className="w-4 h-4" />, description: 'PNG Info extraído' },
   { id: 'planner', label: 'Planner', icon: <Calculator className="w-4 h-4" />, description: 'Calcular entrenamiento' },
   { id: 'trigger', label: 'Trigger', icon: <Hash className="w-4 h-4" />, description: 'Validar trigger word' },
@@ -180,6 +183,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
               onBack={() => setActiveTab('pipeline')}
             />
           )}
+          {activeTab === 'templates' && <CaptionTemplates />}
           {activeTab === 'metadata' && <MetadataExtractor />}
           {activeTab === 'planner' && <TrainingPlanner />}
           {activeTab === 'trigger' && <TriggerManager />}
