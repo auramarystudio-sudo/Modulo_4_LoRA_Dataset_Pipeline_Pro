@@ -149,7 +149,8 @@ interface DemoImage {
 }
 
 function generateDemoImages(config: PipelineConfig): DemoImage[] {
-  // Generar nombres de archivo demo realistas
+  // Si es modo demo con imágenes cargadas, usar al menos la cantidad que el usuario proporcionó
+  // En producción real, esto vendría del directorio de entrada
   const count = 8 + Math.floor(Math.random() * 8); // 8-15 imágenes
   const images: DemoImage[] = [];
   

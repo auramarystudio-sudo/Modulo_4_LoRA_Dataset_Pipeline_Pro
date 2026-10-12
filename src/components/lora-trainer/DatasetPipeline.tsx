@@ -3,6 +3,8 @@
  * 
  * Gestiona:
  * - Configuración del pipeline (input/output, método, dry-run)
+ * - Selector de directorios con explorador visual
+ * - Zona drag & drop para imágenes (funciona con 1+ imágenes)
  * - Ejecución del proceso Python con progreso en tiempo real
  * - Visualización de logs y estado
  * - Transición a CaptionPreview cuando se completa
@@ -21,11 +23,15 @@ import {
   Loader2,
   Terminal,
   Zap,
+  Search,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../../store/lora-trainer-store';
 import { runDatasetPipeline } from '../../utils/python-runner';
 import type { PipelineLogLine, CaptionMethod } from '../../types/lora-trainer';
 import { OLLAMA_MODELS } from '../../data/lora-defaults';
+import DirectoryPicker from './DirectoryPicker';
+import ImageDropZone, { type DroppedImage } from './ImageDropZone';
 
 interface DatasetPipelineProps {
   onComplete: () => void;
@@ -41,21 +47,52 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
     setPipelineConfig,
     addCaptionsToSession,
     updateSessionEstado,
+    droppedImages,
+    setDroppedImages,
   } = useLoraTrainerStore();
 
   const [localInputDir, setLocalInputDir] = useState(pipelineConfig.inputDir);
   const [localOutputDir, setLocalOutputDir] = useState(pipelineConfig.outputDir);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showDirPicker, setShowDirPicker] = useState<'input' | 'output' | null>(null);
+  const [localImages, setLocalImages] = useState<DroppedImage[]>([]);
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
+
+  // Sincronizar imágenes locales con el store
+  const handleImagesChange = useCallback((images: DroppedImage[]) => {
+    setLocalImages(images);
+    // Guardar versión simplificada en el store (sin File objects)
+    setDroppedImages(images.map(img => ({
+      id: img.id,
+      name: img.name,
+      preview: img.preview,
+      size: img.size,
+    })));
+  }, [setDroppedImages]);
 
   // Ejecutar el pipeline
   const handleRun = useCallback(async () => {
     if (!activeSession) return;
 
+    // Validar que haya al menos una fuente de imágenes
+    const hasImages = localImages.length > 0 || localInputDir.trim() !== '';
+    if (!hasImages) {
+      setPipelineState({
+        running: false,
+        progress: 0,
+        logs: [{
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          message: '❌ No hay imágenes. Arrastra imágenes o selecciona un directorio de entrada.',
+        }],
+      });
+      return;
+    }
+
     const config = {
-      inputDir: localInputDir,
-      outputDir: localOutputDir,
+      inputDir: localInputDir || '(imágenes cargadas)',
+      outputDir: localOutputDir || '(directorio por defecto)',
       triggerWord: activeSession.trigger_word,
       method: pipelineConfig.method,
       model: pipelineConfig.model,
@@ -69,11 +106,12 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
 
     try {
       const result = await runDatasetPipeline(config, (log: PipelineLogLine) => {
+        const currentLogs = useLoraTrainerStore.getState().pipelineState.logs;
         setPipelineState({
           running: true,
           progress: log.progress ?? 0,
           currentFile: log.message.includes('Procesando') ? log.message : undefined,
-          logs: [...pipelineState.logs, log],
+          logs: [...currentLogs, log],
         });
       });
 
@@ -84,11 +122,12 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
 
       updateSessionEstado(activeSession.id, result.success ? 'completado' : 'error');
       
+      const finalLogs = useLoraTrainerStore.getState().pipelineState.logs;
       setPipelineState({
         running: false,
         progress: 100,
         result,
-        logs: [...pipelineState.logs, {
+        logs: [...finalLogs, {
           timestamp: new Date().toISOString(),
           level: result.success ? 'success' : 'error',
           message: result.success ? '✅ Pipeline finalizado exitosamente' : `❌ Error: ${result.error}`,
@@ -98,17 +137,18 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
       updateSessionEstado(activeSession.id, 'error');
+      const errorLogs = useLoraTrainerStore.getState().pipelineState.logs;
       setPipelineState({
         running: false,
         progress: 0,
-        logs: [...pipelineState.logs, {
+        logs: [...errorLogs, {
           timestamp: new Date().toISOString(),
           level: 'error',
           message: `❌ Error fatal: ${errorMsg}`,
         }],
       });
     }
-  }, [activeSession, localInputDir, localOutputDir, pipelineConfig, pipelineState.logs, setPipelineState, setPipelineConfig, addCaptionsToSession, updateSessionEstado]);
+  }, [activeSession, localInputDir, localOutputDir, localImages, pipelineConfig, setPipelineState, setPipelineConfig, addCaptionsToSession, updateSessionEstado]);
 
   // Detener pipeline (simulado)
   const handleStop = useCallback(() => {
@@ -117,6 +157,24 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
       updateSessionEstado(activeSession.id, 'planificacion');
     }
   }, [activeSession, setPipelineState, updateSessionEstado]);
+
+  // Abrir selector de directorios
+  const openDirPicker = (mode: 'input' | 'output') => {
+    setShowDirPicker(mode);
+  };
+
+  // Seleccionar directorio
+  const handleDirSelect = (path: string) => {
+    if (showDirPicker === 'input') {
+      setLocalInputDir(path);
+    } else {
+      setLocalOutputDir(path);
+    }
+    setShowDirPicker(null);
+  };
+
+  // Puede ejecutar?
+  const canRun = activeSession && (localImages.length > 0 || localInputDir.trim() !== '');
 
   if (!activeSession) {
     return (
@@ -154,7 +212,7 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
         </div>
 
         {/* Info de sesión activa */}
-        <div className="bg-slate-800/50 rounded-lg p-4 mb-4">
+        <div className="bg-slate-800/50 rounded-lg p-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <span className="text-slate-400">Proyecto:</span>
@@ -166,44 +224,117 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
             </div>
             <div>
               <span className="text-slate-400">Concepto:</span>
-              <span className="ml-2 text-slate-200">{activeSession.concepto_base.slice(0, 40)}...</span>
+              <span className="ml-2 text-slate-200 truncate block max-w-[200px]">{activeSession.concepto_base}</span>
             </div>
           </div>
         </div>
 
-        {/* Configuración de directorios */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              <FolderOpen className="w-4 h-4 inline mr-1" />
-              Directorio de Entrada
+        {/* ============================================ */}
+        {/* SECCIÓN: FUENTES DE IMÁGENES */}
+        {/* ============================================ */}
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-cyan-400" />
+            Fuentes de Imágenes
+          </h3>
+          <p className="text-xs text-slate-500 mb-4">
+            Selecciona un directorio existente o arrastra imágenes directamente. Puedes usar ambas opciones.
+          </p>
+
+          {/* Opción 1: Selector de directorio */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              📁 Opción 1: Directorio de imágenes existentes
             </label>
-            <input
-              type="text"
-              value={localInputDir}
-              onChange={(e) => setLocalInputDir(e.target.value)}
-              placeholder="/ruta/a/imagenes/originales"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  value={localInputDir}
+                  onChange={(e) => setLocalInputDir(e.target.value)}
+                  placeholder="/ruta/a/imagenes/ o usa el explorador →"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                  disabled={pipelineState.running}
+                />
+              </div>
+              <button
+                onClick={() => openDirPicker('input')}
+                disabled={pipelineState.running}
+                className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FolderOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Explorar</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Opción 2: Drag & Drop */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              🖼️ Opción 2: Arrastra imágenes (funciona con 1 o más)
+            </label>
+            <ImageDropZone
+              images={localImages}
+              onImagesChange={handleImagesChange}
               disabled={pipelineState.running}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              <FolderOpen className="w-4 h-4 inline mr-1" />
-              Directorio de Salida
-            </label>
-            <input
-              type="text"
-              value={localOutputDir}
-              onChange={(e) => setLocalOutputDir(e.target.value)}
-              placeholder="/ruta/a/dataset/procesado"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+
+          {/* Resumen de fuentes */}
+          {(localInputDir || localImages.length > 0) && (
+            <div className="mt-4 bg-slate-800/30 rounded-lg p-3 border border-slate-700/50">
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                {localInputDir && (
+                  <span className="flex items-center gap-1 text-slate-300">
+                    <FolderOpen className="w-3.5 h-3.5 text-yellow-400" />
+                    Directorio: <span className="font-mono text-cyan-300">{localInputDir}</span>
+                  </span>
+                )}
+                {localImages.length > 0 && (
+                  <span className="flex items-center gap-1 text-slate-300">
+                    <ImageIcon className="w-3.5 h-3.5 text-green-400" />
+                    {localImages.length} imagen{localImages.length !== 1 ? 'es' : ''} cargada{localImages.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ============================================ */}
+        {/* SECCIÓN: DIRECTORIO DE SALIDA */}
+        {/* ============================================ */}
+        <div className="mb-6">
+          <label className="block text-xs font-medium text-slate-400 mb-2">
+            📂 Directorio de Salida (dataset procesado)
+          </label>
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input
+                type="text"
+                value={localOutputDir}
+                onChange={(e) => setLocalOutputDir(e.target.value)}
+                placeholder="/ruta/a/dataset/procesado o usa el explorador →"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                disabled={pipelineState.running}
+              />
+            </div>
+            <button
+              onClick={() => openDirPicker('output')}
               disabled={pipelineState.running}
-            />
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FolderOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Explorar</span>
+            </button>
           </div>
         </div>
 
-        {/* Método y opciones */}
+        {/* ============================================ */}
+        {/* SECCIÓN: MÉTODO Y OPCIONES */}
+        {/* ============================================ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">Método</label>
@@ -289,11 +420,16 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
         )}
 
         {/* Botones de control */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {!pipelineState.running ? (
             <button
               onClick={handleRun}
-              className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors"
+              disabled={!canRun}
+              className={`flex items-center gap-2 font-medium px-6 py-2.5 rounded-lg transition-colors ${
+                canRun
+                  ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              }`}
             >
               <Play className="w-4 h-4" />
               Ejecutar Pipeline
@@ -316,6 +452,13 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
               <CheckCircle2 className="w-4 h-4" />
               Ver Captions Generados
             </button>
+          )}
+
+          {!canRun && !pipelineState.running && (
+            <span className="flex items-center gap-1 text-xs text-yellow-400 self-center">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Agrega imágenes o selecciona un directorio
+            </span>
           )}
         </div>
       </div>
@@ -407,6 +550,17 @@ export default function DatasetPipeline({ onComplete }: DatasetPipelineProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Directory Picker Modal */}
+      {showDirPicker && (
+        <DirectoryPicker
+          isOpen={true}
+          onClose={() => setShowDirPicker(null)}
+          onSelect={handleDirSelect}
+          initialPath={showDirPicker === 'input' ? localInputDir : localOutputDir}
+          mode={showDirPicker}
+        />
       )}
     </div>
   );

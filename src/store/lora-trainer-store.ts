@@ -21,6 +21,14 @@ import type {
 } from '../types/lora-trainer';
 import { DEFAULT_PIPELINE_CONFIG } from '../data/lora-defaults';
 
+// Tipo para imágenes cargadas por drag & drop
+export interface DroppedImageData {
+  id: string;
+  name: string;
+  preview: string;
+  size: string;
+}
+
 // ============================================================
 // INTERFAZ DEL STORE
 // ============================================================
@@ -37,9 +45,16 @@ interface LoraTrainerStore {
   // Training config
   trainingConfig: TrainingConfig;
   
+  // Imágenes drag & drop
+  droppedImages: DroppedImageData[];
+  
   // PocketBase
   pocketbaseUrl: string;
   pocketbaseConnected: boolean;
+  
+  // Acciones - Imágenes
+  setDroppedImages: (images: DroppedImageData[]) => void;
+  clearDroppedImages: () => void;
   
   // Acciones - Sesiones
   createSession: (nombre: string, triggerWord: string, conceptoBase: string) => string;
@@ -77,6 +92,7 @@ export const useLoraTrainerStore = create<LoraTrainerStore>()(
       // Estado inicial
       sessions: [],
       activeSessionId: null,
+      droppedImages: [],
       pipelineState: {
         running: false,
         progress: 0,
@@ -96,6 +112,16 @@ export const useLoraTrainerStore = create<LoraTrainerStore>()(
       },
       pocketbaseUrl: 'http://127.0.0.1:8090',
       pocketbaseConnected: false,
+
+      // === IMÁGENES DRAG & DROP ===
+      
+      setDroppedImages: (images) => {
+        set({ droppedImages: images });
+      },
+
+      clearDroppedImages: () => {
+        set({ droppedImages: [] });
+      },
 
       // === SESIONES ===
       
