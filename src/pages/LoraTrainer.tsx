@@ -1,11 +1,15 @@
 /**
- * LoraTrainer - Interfaz con grid de tarjetas visuales
+ * LoraTrainer - Glassmorphism Dark Pro v3.0
  * 
- * Diseño tipo dashboard visual:
- * - Tarjetas grandes con iconos
- * - Grid organizado por categorías
- * - Click para expandir herramienta
- * - Sin sidebar propio (para integrarse en módulo principal)
+ * Estilo oficial aplicado:
+ * ✅ Glassmorphism con backdrop-blur
+ * ✅ Dark mode profesional
+ * ✅ Gradientes sutiles
+ * ✅ Bordes con opacidad baja (/50)
+ * ✅ Sombras profundas
+ * ✅ Tipografía jerárquica
+ * ✅ Transiciones suaves
+ * ✅ Responsive design
  */
 
 import { useState, useCallback } from 'react';
@@ -35,7 +39,7 @@ import {
   BarChart3,
   AlertCircle,
   ArrowLeft,
-  X,
+  Settings,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 
@@ -83,43 +87,43 @@ interface Tool {
   icon: React.ReactNode;
   component: React.ReactNode;
   category: 'main' | 'dataset' | 'training' | 'analysis' | 'help';
-  color: string;
+  gradient: string;
 }
 
 const TOOLS: Tool[] = [
-  // MAIN
-  { id: 'progress', title: 'Mi Progreso', description: 'Checklist paso a paso', icon: <CheckCircle2 className="w-8 h-8" />, component: <ProgressChecklist />, category: 'main', color: 'from-cyan-500 to-blue-600' },
-  { id: 'sessions', title: 'Sesiones', description: 'Gestionar proyectos', icon: <Database className="w-8 h-8" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main', color: 'from-cyan-500 to-blue-600' },
-  { id: 'pipeline', title: 'Pipeline', description: 'Procesar imágenes', icon: <Layers className="w-8 h-8" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main', color: 'from-cyan-500 to-blue-600' },
-  { id: 'captions', title: 'Captions', description: 'Revisar descripciones', icon: <FileText className="w-8 h-8" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main', color: 'from-cyan-500 to-blue-600' },
-  { id: 'planner', title: 'Planner', description: 'Configurar entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TrainingPlanner />, category: 'main', color: 'from-cyan-500 to-blue-600' },
-  { id: 'export', title: 'Exportar', description: 'Generar config Kohya', icon: <FileCode2 className="w-8 h-8" />, component: <KohyaConfigExporter />, category: 'main', color: 'from-cyan-500 to-blue-600' },
+  // MAIN - Cyan/Blue
+  { id: 'progress', title: 'Mi Progreso', description: 'Checklist paso a paso', icon: <CheckCircle2 className="w-8 h-8" />, component: <ProgressChecklist />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'sessions', title: 'Sesiones', description: 'Gestionar proyectos', icon: <Database className="w-8 h-8" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'pipeline', title: 'Pipeline', description: 'Procesar imágenes', icon: <Layers className="w-8 h-8" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'captions', title: 'Captions', description: 'Revisar descripciones', icon: <FileText className="w-8 h-8" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'planner', title: 'Planner', description: 'Configurar entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TrainingPlanner />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'export', title: 'Exportar', description: 'Generar config Kohya', icon: <FileCode2 className="w-8 h-8" />, component: <KohyaConfigExporter />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
   
-  // DATASET
-  { id: 'templates', title: 'Plantillas', description: 'Captions por categorías', icon: <Sparkles className="w-8 h-8" />, component: <CaptionTemplates />, category: 'dataset', color: 'from-blue-500 to-indigo-600' },
-  { id: 'metadata', title: 'Metadata', description: 'Info de imágenes PNG', icon: <Info className="w-8 h-8" />, component: <MetadataExtractor />, category: 'dataset', color: 'from-blue-500 to-indigo-600' },
-  { id: 'trigger', title: 'Trigger Word', description: 'Validar palabra clave', icon: <Hash className="w-8 h-8" />, component: <TriggerManager />, category: 'dataset', color: 'from-blue-500 to-indigo-600' },
-  { id: 'duplicates', title: 'Duplicados', description: 'Detectar imágenes duplicadas', icon: <Search className="w-8 h-8" />, component: <DuplicateDetector />, category: 'dataset', color: 'from-blue-500 to-indigo-600' },
-  { id: 'classimages', title: 'Class Images', description: 'Generar prompts de clase', icon: <Target className="w-8 h-8" />, component: <ClassImageGenerator />, category: 'dataset', color: 'from-blue-500 to-indigo-600' },
+  // DATASET - Blue/Indigo
+  { id: 'templates', title: 'Plantillas', description: 'Captions por categorías', icon: <Sparkles className="w-8 h-8" />, component: <CaptionTemplates />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'metadata', title: 'Metadata', description: 'Info de imágenes PNG', icon: <Info className="w-8 h-8" />, component: <MetadataExtractor />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'trigger', title: 'Trigger Word', description: 'Validar palabra clave', icon: <Hash className="w-8 h-8" />, component: <TriggerManager />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'duplicates', title: 'Duplicados', description: 'Detectar imágenes duplicadas', icon: <Search className="w-8 h-8" />, component: <DuplicateDetector />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'classimages', title: 'Class Images', description: 'Generar prompts de clase', icon: <Target className="w-8 h-8" />, component: <ClassImageGenerator />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
   
-  // TRAINING
-  { id: 'quality', title: 'Calidad', description: 'Control de calidad', icon: <Shield className="w-8 h-8" />, component: <QualityChecker />, category: 'training', color: 'from-purple-500 to-pink-600' },
-  { id: 'history', title: 'Historial', description: 'Cambios y undo/redo', icon: <History className="w-8 h-8" />, component: <ChangeHistory />, category: 'training', color: 'from-purple-500 to-pink-600' },
-  { id: 'backup', title: 'Backup', description: 'Guardar y restaurar', icon: <Save className="w-8 h-8" />, component: <BackupRestore />, category: 'training', color: 'from-purple-500 to-pink-600' },
-  { id: 'report', title: 'Reporte', description: 'Reporte final', icon: <FileText className="w-8 h-8" />, component: <FinalReport />, category: 'training', color: 'from-purple-500 to-pink-600' },
+  // TRAINING - Purple/Pink
+  { id: 'quality', title: 'Calidad', description: 'Control de calidad', icon: <Shield className="w-8 h-8" />, component: <QualityChecker />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
+  { id: 'history', title: 'Historial', description: 'Cambios y undo/redo', icon: <History className="w-8 h-8" />, component: <ChangeHistory />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
+  { id: 'backup', title: 'Backup', description: 'Guardar y restaurar', icon: <Save className="w-8 h-8" />, component: <BackupRestore />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
+  { id: 'report', title: 'Reporte', description: 'Reporte final', icon: <FileText className="w-8 h-8" />, component: <FinalReport />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
   
-  // ANALYSIS
-  { id: 'dashboard', title: 'Dashboard', description: 'Vista general', icon: <BarChart3 className="w-8 h-8" />, component: <Dashboard />, category: 'analysis', color: 'from-green-500 to-emerald-600' },
-  { id: 'wordcloud', title: 'Word Cloud', description: 'Análisis de palabras', icon: <Type className="w-8 h-8" />, component: <WordCloudAnalyzer />, category: 'analysis', color: 'from-green-500 to-emerald-600' },
-  { id: 'recommender', title: 'Recomendador', description: 'Sugerencias inteligentes', icon: <Lightbulb className="w-8 h-8" />, component: <SmartRecommender />, category: 'analysis', color: 'from-green-500 to-emerald-600' },
+  // ANALYSIS - Green/Emerald
+  { id: 'dashboard', title: 'Dashboard', description: 'Vista general', icon: <BarChart3 className="w-8 h-8" />, component: <Dashboard />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
+  { id: 'wordcloud', title: 'Word Cloud', description: 'Análisis de palabras', icon: <Type className="w-8 h-8" />, component: <WordCloudAnalyzer />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
+  { id: 'recommender', title: 'Recomendador', description: 'Sugerencias inteligentes', icon: <Lightbulb className="w-8 h-8" />, component: <SmartRecommender />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
   
-  // HELP
-  { id: 'doctor', title: 'Dr. Dataset', description: 'Diagnóstico automático', icon: <AlertCircle className="w-8 h-8" />, component: <DatasetDoctor />, category: 'help', color: 'from-yellow-500 to-orange-600' },
-  { id: 'photoguide', title: 'Foto Guía', description: 'Cómo tomar fotos', icon: <Sparkles className="w-8 h-8" />, component: <PhotoGuide />, category: 'help', color: 'from-yellow-500 to-orange-600' },
-  { id: 'timer', title: 'Calculadora', description: 'Tiempo de entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TimeCalculator />, category: 'help', color: 'from-yellow-500 to-orange-600' },
-  { id: 'glossary', title: 'Glosario', description: 'Términos explicados', icon: <BookOpen className="w-8 h-8" />, component: <InteractiveGlossary />, category: 'help', color: 'from-yellow-500 to-orange-600' },
-  { id: 'mistakes', title: 'Errores Comunes', description: 'Qué evitar', icon: <AlertCircle className="w-8 h-8" />, component: <CommonMistakes />, category: 'help', color: 'from-yellow-500 to-orange-600' },
-  { id: 'help', title: 'Centro de Ayuda', description: 'Guía completa', icon: <HelpCircle className="w-8 h-8" />, component: <HelpCenter />, category: 'help', color: 'from-yellow-500 to-orange-600' },
+  // HELP - Yellow/Orange
+  { id: 'doctor', title: 'Dr. Dataset', description: 'Diagnóstico automático', icon: <AlertCircle className="w-8 h-8" />, component: <DatasetDoctor />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  { id: 'photoguide', title: 'Foto Guía', description: 'Cómo tomar fotos', icon: <Sparkles className="w-8 h-8" />, component: <PhotoGuide />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  { id: 'timer', title: 'Calculadora', description: 'Tiempo de entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TimeCalculator />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  { id: 'glossary', title: 'Glosario', description: 'Términos explicados', icon: <BookOpen className="w-8 h-8" />, component: <InteractiveGlossary />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  { id: 'mistakes', title: 'Errores Comunes', description: 'Qué evitar', icon: <AlertCircle className="w-8 h-8" />, component: <CommonMistakes />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  { id: 'help', title: 'Centro de Ayuda', description: 'Guía completa', icon: <HelpCircle className="w-8 h-8" />, component: <HelpCenter />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
 ];
 
 const CATEGORIES = {
@@ -165,7 +169,6 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
     setShowClearConfirm(false);
   }, [activeSessionId, deleteSession, setActiveSession]);
 
-  // Agrupar herramientas por categoría
   const toolsByCategory = Object.entries(CATEGORIES).reduce((acc, [catKey, catInfo]) => {
     const categoryTools = TOOLS.filter((tool) => tool.category === catKey);
     if (categoryTools.length > 0) {
@@ -177,127 +180,121 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
   const expandedToolData = TOOLS.find((t) => t.id === expandedTool);
 
   return (
-    <div className="w-full">
-      {/* Header compacto */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2.5 rounded-xl shadow-lg shadow-cyan-500/20">
-            <GraduationCap className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">LoRA Pipeline Pro</h1>
-            <p className="text-sm text-slate-400">Selecciona una herramienta para comenzar</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowWizard(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-600/20 transition-colors text-sm"
-          >
-            <Wand2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Wizard</span>
-          </button>
-
-          <button
-            onClick={() => setShowTour(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 border border-cyan-600/20 transition-colors text-sm"
-          >
-            <Map className="w-4 h-4" />
-            <span className="hidden sm:inline">Tour</span>
-          </button>
-
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            disabled={!activeSession}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Limpiar</span>
-          </button>
-
-          {onDatasetReady && activeSession && (
-            <button
-              onClick={handleDatasetReady}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium shadow-lg shadow-green-600/20 transition-all text-sm"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Dataset Listo</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Vista expandida de herramienta */}
-      {expandedTool && expandedToolData && (
-        <div className="mb-6">
-          <button
-            onClick={() => setExpandedTool(null)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al dashboard
-          </button>
-          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm min-h-[600px]">
-            {expandedToolData.component}
-          </div>
-        </div>
-      )}
-
-      {/* Grid de tarjetas por categoría */}
-      {!expandedTool && (
-        <div className="space-y-8">
-          {Object.entries(toolsByCategory).map(([catKey, { info, tools }]) => (
-            <div key={catKey}>
-              {/* Título de categoría */}
-              <div className="mb-4">
-                <h2 className="text-lg font-bold text-white">{info.label}</h2>
-                <p className="text-sm text-slate-400">{info.description}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+      {/* Header - Glassmorphism Dark Pro */}
+      <header className="border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl sticky top-0 z-40 shadow-lg">
+        <div className="max-w-[1800px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
-
-              {/* Grid de tarjetas */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {tools.map((tool) => (
-                  <button
-                    key={tool.id}
-                    onClick={() => setExpandedTool(tool.id)}
-                    className="group relative bg-slate-900/50 border border-slate-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-slate-700 transition-all hover:scale-105 hover:shadow-2xl"
-                  >
-                    {/* Icono con gradiente */}
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${tool.color} text-white mb-4 shadow-lg group-hover:shadow-xl transition-shadow`}>
-                      {tool.icon}
-                    </div>
-
-                    {/* Contenido */}
-                    <h3 className="text-base font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
-                      {tool.title}
-                    </h3>
-                    <p className="text-sm text-slate-400">
-                      {tool.description}
-                    </p>
-
-                    {/* Indicador de hover */}
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
-                    </div>
-                  </button>
-                ))}
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                  LoRA Pipeline Pro
+                </h1>
+                <p className="text-xs text-slate-500">Glassmorphism Dark Pro v3.0</p>
               </div>
             </div>
-          ))}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowWizard(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-medium transition shadow-lg"
+              >
+                <Wand2 className="w-4 h-4" />
+                <span className="hidden md:inline">Wizard</span>
+              </button>
+              <button
+                onClick={() => setShowTour(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition"
+              >
+                <Map className="w-4 h-4" />
+                <span className="hidden md:inline">Tour</span>
+              </button>
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                disabled={!activeSession}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-700/50 text-sm font-medium transition disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden md:inline">Limpiar</span>
+              </button>
+              {onDatasetReady && activeSession && (
+                <button
+                  onClick={handleDatasetReady}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-medium transition shadow-lg"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Dataset Listo</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </header>
+
+      {/* Contenido Principal */}
+      <div className="max-w-[1800px] mx-auto px-6 py-6">
+        {/* Vista expandida */}
+        {expandedTool && expandedToolData && (
+          <div className="space-y-6">
+            <button
+              onClick={() => setExpandedTool(null)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/50 transition"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Volver al dashboard</span>
+            </button>
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+              {expandedToolData.component}
+            </div>
+          </div>
+        )}
+
+        {/* Grid de tarjetas */}
+        {!expandedTool && (
+          <div className="space-y-8">
+            {Object.entries(toolsByCategory).map(([catKey, { info, tools }]) => (
+              <div key={catKey}>
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold text-slate-100">{info.label}</h2>
+                  <p className="text-sm text-slate-400">{info.description}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {tools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => setExpandedTool(tool.id)}
+                      className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl hover:border-slate-700/50 hover:shadow-2xl transition-all hover:scale-105"
+                    >
+                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${tool.gradient} text-white mb-4 shadow-lg group-hover:shadow-2xl transition`}>
+                        {tool.icon}
+                      </div>
+                      <h3 className="text-base font-bold text-slate-100 mb-1 group-hover:text-cyan-400 transition">
+                        {tool.title}
+                      </h3>
+                      <p className="text-sm text-slate-400">
+                        {tool.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Modal limpiar */}
       {showClearConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md">
+          <div className="bg-slate-900 border border-red-700/50 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-red-600/10 p-3 rounded-xl">
+              <div className="w-12 h-12 rounded-xl bg-red-600/10 flex items-center justify-center">
                 <Trash2 className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Limpiar Todo</h3>
+                <h3 className="text-xl font-bold text-slate-100">Limpiar Todo</h3>
                 <p className="text-sm text-slate-400">¿Estás seguro?</p>
               </div>
             </div>
@@ -307,13 +304,13 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
             <div className="flex gap-3">
               <button
                 onClick={handleClear}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition"
               >
                 Sí, Limpiar
               </button>
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 border border-slate-700/50 font-medium transition"
               >
                 Cancelar
               </button>
