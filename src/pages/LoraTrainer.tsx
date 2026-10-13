@@ -63,8 +63,14 @@ import BeginnerWizard from '../components/lora-trainer/BeginnerWizard';
 import BackupRestore from '../components/lora-trainer/BackupRestore';
 import FinalReport from '../components/lora-trainer/FinalReport';
 import SmartRecommender from '../components/lora-trainer/SmartRecommender';
+import ProgressChecklist from '../components/lora-trainer/ProgressChecklist';
+import InteractiveGlossary from '../components/lora-trainer/InteractiveGlossary';
+import CommonMistakes from '../components/lora-trainer/CommonMistakes';
+import DatasetDoctor from '../components/lora-trainer/DatasetDoctor';
+import PhotoGuide from '../components/lora-trainer/PhotoGuide';
+import TimeCalculator from '../components/lora-trainer/TimeCalculator';
 
-type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'help' | 'backup' | 'report' | 'recommender';
+type TabId = 'dashboard' | 'progress' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'doctor' | 'photoguide' | 'timer' | 'glossary' | 'mistakes' | 'help' | 'backup' | 'report' | 'recommender';
 
 interface Tab {
   id: TabId;
@@ -74,6 +80,7 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
+  { id: 'progress', label: 'Mi Progreso', icon: <CheckCircle2 className="w-4 h-4" />, description: 'Checklist paso a paso' },
   { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" />, description: 'Vista general' },
   { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, description: 'Gestión de sesiones' },
   { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, description: 'Ejecutar pipeline Python' },
@@ -88,6 +95,11 @@ const TABS: Tab[] = [
   { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, description: 'Cambios y undo/redo' },
   { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, description: 'Análisis de palabras' },
   { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, description: 'Control de calidad' },
+  { id: 'doctor', label: 'Dr. Dataset', icon: <Info className="w-4 h-4" />, description: 'Diagnóstico del dataset' },
+  { id: 'photoguide', label: 'Foto Guía', icon: <Sparkles className="w-4 h-4" />, description: 'Cómo tomar fotos' },
+  { id: 'timer', label: 'Tiempo', icon: <Calculator className="w-4 h-4" />, description: 'Calculadora de tiempo' },
+  { id: 'glossary', label: 'Glosario', icon: <BookOpen className="w-4 h-4" />, description: 'Términos explicados' },
+  { id: 'mistakes', label: 'Errores', icon: <FileText className="w-4 h-4" />, description: 'Errores comunes' },
   { id: 'help', label: 'Ayuda', icon: <BookOpen className="w-4 h-4" />, description: 'Guía y glosario' },
   { id: 'backup', label: 'Backup', icon: <Save className="w-4 h-4" />, description: 'Backup y restauración' },
   { id: 'report', label: 'Reporte', icon: <ReportIcon className="w-4 h-4" />, description: 'Reporte final' },
@@ -104,7 +116,7 @@ interface LoraTrainerProps {
 }
 
 export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetReady }: LoraTrainerProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('sessions');
+  const [activeTab, setActiveTab] = useState<TabId>('progress');
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
   const [showTour, setShowTour] = useState(false);
@@ -230,6 +242,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
 
         {/* Contenido de tabs */}
         <div className="min-h-[500px]">
+          {activeTab === 'progress' && <ProgressChecklist />}
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'sessions' && (
             <SessionHistory onNewSession={() => setShowNewSessionModal(true)} />
@@ -256,6 +269,11 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           {activeTab === 'history' && <ChangeHistory />}
           {activeTab === 'wordcloud' && <WordCloudAnalyzer />}
           {activeTab === 'quality' && <QualityChecker />}
+          {activeTab === 'doctor' && <DatasetDoctor />}
+          {activeTab === 'photoguide' && <PhotoGuide />}
+          {activeTab === 'timer' && <TimeCalculator />}
+          {activeTab === 'glossary' && <InteractiveGlossary />}
+          {activeTab === 'mistakes' && <CommonMistakes />}
           {activeTab === 'help' && <HelpCenter />}
           {activeTab === 'backup' && <BackupRestore />}
           {activeTab === 'report' && <FinalReport />}
