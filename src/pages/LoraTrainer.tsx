@@ -1,7 +1,11 @@
 /**
- * LoraTrainer - Página principal optimizada
+ * LoraTrainer - Interfaz moderna tipo workflow
  * 
- * Diseño con Modo Principiante/Experto y navegación por categorías
+ * Diseño minimalista y profesional con:
+ * - Flujo de trabajo visual paso a paso
+ * - Panel de herramientas deslizable
+ * - Botón limpiar con confirmación
+ * - Contexto inteligente según el paso actual
  */
 
 import { useState, useCallback } from 'react';
@@ -9,55 +13,28 @@ import {
   GraduationCap,
   Database,
   FileText,
-  Info,
   Calculator,
-  Hash,
   ArrowLeft,
   CheckCircle2,
   Layers,
   Sparkles,
-  BarChart3,
   Wand2,
   FileCode2,
-  Search,
-  Target,
-  History,
-  Type,
-  Shield,
-  BookOpen,
-  Map,
-  Save,
-  FileText as ReportIcon,
-  Lightbulb,
-  ChevronDown,
-  ChevronRight,
-  Menu,
+  ArrowRight,
+  Trash2,
+  HelpCircle,
+  Settings,
   X,
-  Zap,
+  ChevronRight,
+  AlertCircle,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
 import CaptionPreview from '../components/lora-trainer/CaptionPreview';
-import CaptionTemplates from '../components/lora-trainer/CaptionTemplates';
-import MetadataExtractor from '../components/lora-trainer/MetadataExtractor';
-import TrainingPlanner from '../components/lora-trainer/TrainingPlanner';
-import TriggerManager from '../components/lora-trainer/TriggerManager';
-import SessionHistory from '../components/lora-trainer/SessionHistory';
-import Dashboard from '../components/lora-trainer/Dashboard';
 import BatchOperations from '../components/lora-trainer/BatchOperations';
+import TrainingPlanner from '../components/lora-trainer/TrainingPlanner';
+import SessionHistory from '../components/lora-trainer/SessionHistory';
 import KohyaConfigExporter from '../components/lora-trainer/KohyaConfigExporter';
-import DuplicateDetector from '../components/lora-trainer/DuplicateDetector';
-import ClassImageGenerator from '../components/lora-trainer/ClassImageGenerator';
-import ChangeHistory from '../components/lora-trainer/ChangeHistory';
-import WordCloudAnalyzer from '../components/lora-trainer/WordCloudAnalyzer';
-import QualityChecker from '../components/lora-trainer/QualityChecker';
-import KeyboardShortcuts from '../components/lora-trainer/KeyboardShortcuts';
-import InteractiveTour from '../components/lora-trainer/InteractiveTour';
-import HelpCenter from '../components/lora-trainer/HelpCenter';
-import BeginnerWizard from '../components/lora-trainer/BeginnerWizard';
-import BackupRestore from '../components/lora-trainer/BackupRestore';
-import FinalReport from '../components/lora-trainer/FinalReport';
-import SmartRecommender from '../components/lora-trainer/SmartRecommender';
 import ProgressChecklist from '../components/lora-trainer/ProgressChecklist';
 import InteractiveGlossary from '../components/lora-trainer/InteractiveGlossary';
 import CommonMistakes from '../components/lora-trainer/CommonMistakes';
@@ -65,76 +42,38 @@ import DatasetDoctor from '../components/lora-trainer/DatasetDoctor';
 import PhotoGuide from '../components/lora-trainer/PhotoGuide';
 import TimeCalculator from '../components/lora-trainer/TimeCalculator';
 
-type TabId = 'progress' | 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'doctor' | 'photoguide' | 'timer' | 'glossary' | 'mistakes' | 'help' | 'backup' | 'report' | 'recommender';
+type WorkflowStep = 'start' | 'session' | 'upload' | 'captions' | 'plan' | 'export';
 
-interface Tab {
-  id: TabId;
-  label: string;
-  icon: React.ReactNode;
+interface Step {
+  id: WorkflowStep;
+  number: number;
+  title: string;
   description: string;
-  category: 'essentials' | 'dataset' | 'training' | 'analysis' | 'help';
-  beginnerOnly?: boolean;
+  icon: React.ReactNode;
 }
 
-// Categorías de navegación
-const CATEGORIES = {
-  essentials: {
-    label: '🎯 Esenciales',
-    description: 'Lo básico para empezar',
-  },
-  dataset: {
-    label: '📁 Dataset',
-    description: 'Preparación de datos',
-  },
-  training: {
-    label: '⚙️ Entrenamiento',
-    description: 'Configuración y ejecución',
-  },
-  analysis: {
-    label: '📊 Análisis',
-    description: 'Herramientas avanzadas',
-  },
-  help: {
-    label: '💡 Ayuda',
-    description: 'Guías y recursos',
-  },
-};
+const WORKFLOW_STEPS: Step[] = [
+  { id: 'session', number: 1, title: 'Crear Sesión', description: 'Define tu proyecto', icon: <Database className="w-5 h-5" /> },
+  { id: 'upload', number: 2, title: 'Subir Imágenes', description: 'Agrega tu dataset', icon: <Layers className="w-5 h-5" /> },
+  { id: 'captions', number: 3, title: 'Revisar Captions', description: 'Verifica descripciones', icon: <FileText className="w-5 h-5" /> },
+  { id: 'plan', number: 4, title: 'Planificar', description: 'Configura entrenamiento', icon: <Calculator className="w-5 h-5" /> },
+  { id: 'export', number: 5, title: 'Exportar', description: 'Genera config final', icon: <FileCode2 className="w-5 h-5" /> },
+];
 
-// Todas las pestañas organizadas por categoría
-const ALL_TABS: Tab[] = [
-  // ESENCIALES
-  { id: 'progress', label: 'Mi Progreso', icon: <CheckCircle2 className="w-4 h-4" />, description: 'Checklist paso a paso', category: 'essentials', beginnerOnly: true },
-  { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, description: 'Crear y gestionar sesiones', category: 'essentials', beginnerOnly: true },
-  { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, description: 'Procesar imágenes', category: 'essentials', beginnerOnly: true },
-  { id: 'captions', label: 'Captions', icon: <FileText className="w-4 h-4" />, description: 'Revisar descripciones', category: 'essentials', beginnerOnly: true },
-  { id: 'planner', label: 'Planificar', icon: <Calculator className="w-4 h-4" />, description: 'Configurar entrenamiento', category: 'essentials', beginnerOnly: true },
-  { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-4 h-4" />, description: 'Generar config Kohya', category: 'essentials', beginnerOnly: true },
-  
-  // DATASET
-  { id: 'templates', label: 'Plantillas', icon: <Sparkles className="w-4 h-4" />, description: 'Captions por categorías', category: 'dataset' },
-  { id: 'metadata', label: 'Metadata', icon: <Info className="w-4 h-4" />, description: 'Info de imágenes PNG', category: 'dataset' },
-  { id: 'trigger', label: 'Trigger Word', icon: <Hash className="w-4 h-4" />, description: 'Validar palabra clave', category: 'dataset' },
-  { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-4 h-4" />, description: 'Detectar imágenes duplicadas', category: 'dataset' },
-  { id: 'classimages', label: 'Class Images', icon: <Target className="w-4 h-4" />, description: 'Generar prompts de clase', category: 'dataset' },
-  
-  // TRAINING
-  { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, description: 'Control de calidad', category: 'training' },
-  { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, description: 'Cambios y undo/redo', category: 'training' },
-  { id: 'backup', label: 'Backup', icon: <Save className="w-4 h-4" />, description: 'Guardar y restaurar', category: 'training' },
-  { id: 'report', label: 'Reporte', icon: <ReportIcon className="w-4 h-4" />, description: 'Reporte final', category: 'training' },
-  
-  // ANALYSIS
-  { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" />, description: 'Vista general', category: 'analysis' },
-  { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, description: 'Análisis de palabras', category: 'analysis' },
-  { id: 'recommender', label: 'Recomendador', icon: <Lightbulb className="w-4 h-4" />, description: 'Sugerencias IA', category: 'analysis' },
-  
-  // HELP
-  { id: 'doctor', label: 'Dr. Dataset', icon: <Info className="w-4 h-4" />, description: 'Diagnóstico automático', category: 'help', beginnerOnly: true },
-  { id: 'photoguide', label: 'Foto Guía', icon: <Sparkles className="w-4 h-4" />, description: 'Cómo tomar fotos', category: 'help', beginnerOnly: true },
-  { id: 'timer', label: 'Calculadora', icon: <Calculator className="w-4 h-4" />, description: 'Tiempo de entrenamiento', category: 'help', beginnerOnly: true },
-  { id: 'glossary', label: 'Glosario', icon: <BookOpen className="w-4 h-4" />, description: 'Términos explicados', category: 'help', beginnerOnly: true },
-  { id: 'mistakes', label: 'Errores Comunes', icon: <FileText className="w-4 h-4" />, description: 'Qué evitar', category: 'help', beginnerOnly: true },
-  { id: 'help', label: 'Centro de Ayuda', icon: <BookOpen className="w-4 h-4" />, description: 'Guía completa', category: 'help' },
+interface ToolPanel {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  component: React.ReactNode;
+}
+
+const TOOL_PANELS: ToolPanel[] = [
+  { id: 'progress', title: 'Mi Progreso', icon: <CheckCircle2 className="w-4 h-4" />, component: <ProgressChecklist /> },
+  { id: 'doctor', title: 'Dr. Dataset', icon: <AlertCircle className="w-4 h-4" />, component: <DatasetDoctor /> },
+  { id: 'photoguide', title: 'Foto Guía', icon: <Sparkles className="w-4 h-4" />, component: <PhotoGuide /> },
+  { id: 'timer', title: 'Calculadora', icon: <Calculator className="w-4 h-4" />, component: <TimeCalculator /> },
+  { id: 'glossary', title: 'Glosario', icon: <HelpCircle className="w-4 h-4" />, component: <InteractiveGlossary /> },
+  { id: 'mistakes', title: 'Errores Comunes', icon: <AlertCircle className="w-4 h-4" />, component: <CommonMistakes /> },
 ];
 
 interface LoraTrainerProps {
@@ -144,52 +83,37 @@ interface LoraTrainerProps {
 }
 
 export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetReady }: LoraTrainerProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('progress');
-  const [beginnerMode, setBeginnerMode] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['essentials', 'help'])
-  );
+  const [currentStep, setCurrentStep] = useState<WorkflowStep>('start');
+  const [showToolPanel, setShowToolPanel] = useState<string | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
-  const [showTour, setShowTour] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
 
-  const { activeSessionId, sessions, createSession } = useLoraTrainerStore();
+  const { activeSessionId, sessions, createSession, deleteSession, setActiveSession } = useLoraTrainerStore();
   const activeSession = sessions.find((s) => s.id === activeSessionId);
-
-  // Filtrar tabs según modo
-  const visibleTabs = ALL_TABS.filter((tab) => {
-    if (beginnerMode) {
-      return tab.beginnerOnly || tab.category === 'essentials';
-    }
-    return true;
-  });
-
-  // Agrupar tabs por categoría
-  const tabsByCategory = Object.entries(CATEGORIES).reduce((acc, [catKey, catInfo]) => {
-    const categoryTabs = visibleTabs.filter((tab) => tab.category === catKey);
-    if (categoryTabs.length > 0) {
-      acc[catKey] = { info: catInfo, tabs: categoryTabs };
-    }
-    return acc;
-  }, {} as Record<string, { info: typeof CATEGORIES[keyof typeof CATEGORIES]; tabs: Tab[] }>);
-
-  const toggleCategory = (cat: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(cat)) {
-      newExpanded.delete(cat);
-    } else {
-      newExpanded.add(cat);
-    }
-    setExpandedCategories(newExpanded);
-  };
 
   const handleCreateSession = useCallback((nombre: string, triggerWord: string, conceptoBase: string) => {
     createSession(nombre, triggerWord, conceptoBase);
     setShowNewSessionModal(false);
-    setActiveTab('pipeline');
+    setCurrentStep('upload');
   }, [createSession]);
+
+  // Determinar paso actual basado en el estado
+  const getActiveStep = (): WorkflowStep => {
+    if (!activeSession) return 'session';
+    if (activeSession.captions_generados.length === 0) return 'upload';
+    if (activeSession.captions_generados.some((c) => !c.validated)) return 'captions';
+    if (!activeSession.pasos_recomendados) return 'plan';
+    return 'export';
+  };
+
+  const handleStart = useCallback(() => {
+    if (activeSession) {
+      setCurrentStep(getActiveStep());
+    } else {
+      setShowNewSessionModal(true);
+    }
+  }, [activeSession]);
 
   const handleExport = useCallback(() => {
     setExportSuccess(true);
@@ -202,68 +126,65 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
     }
   }, [activeSession, onDatasetReady]);
 
+  const handleClear = useCallback(() => {
+    if (activeSessionId) {
+      deleteSession(activeSessionId);
+      setActiveSession(null);
+      setCurrentStep('start');
+    }
+    setShowClearConfirm(false);
+  }, [activeSessionId, deleteSession, setActiveSession]);
+
+  const activeStep = getActiveStep();
+  const currentStepIndex = WORKFLOW_STEPS.findIndex((s) => s.id === activeStep);
+
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Header compacto */}
-      <header className="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-sm">
-        <div className="max-w-[1600px] mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            {/* Logo y título */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Header minimalista */}
+      <header className="bg-slate-900/50 border-b border-slate-800/50 backdrop-blur-xl sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-              <div className="bg-cyan-600/20 p-2 rounded-lg border border-cyan-600/30">
-                <GraduationCap className="w-5 h-5 text-cyan-400" />
+              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-xl shadow-lg shadow-cyan-500/20">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-slate-100">LoRA Pipeline Pro</h1>
+              <div>
+                <h1 className="text-lg font-bold text-white">LoRA Pipeline Pro</h1>
                 <p className="text-xs text-slate-400">Dataset Training Tool</p>
               </div>
             </div>
 
-            {/* Controles */}
+            {/* Acciones */}
             <div className="flex items-center gap-2">
-              {/* Toggle Modo */}
+              {/* Botón herramientas */}
               <button
-                onClick={() => setBeginnerMode(!beginnerMode)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  beginnerMode
-                    ? 'bg-purple-600/20 text-purple-300 border border-purple-600/30'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
-                }`}
+                onClick={() => setShowToolPanel(showToolPanel ? null : 'progress')}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
               >
-                {beginnerMode ? <Wand2 className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{beginnerMode ? 'Principiante' : 'Experto'}</span>
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm">Herramientas</span>
               </button>
 
-              {/* Botones de acción */}
+              {/* Botón limpiar */}
               <button
-                onClick={() => setShowWizard(true)}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                onClick={() => setShowClearConfirm(true)}
+                disabled={!activeSession}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <Wand2 className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Wizard</span>
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm">Limpiar</span>
               </button>
 
-              <button
-                onClick={() => setShowTour(true)}
-                className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-              >
-                <Map className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Tour</span>
-              </button>
-
+              {/* Dataset listo */}
               {onDatasetReady && activeSession && (
                 <button
                   onClick={handleDatasetReady}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium shadow-lg shadow-green-600/20 transition-all"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Listo →</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-sm">Dataset Listo</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -271,149 +192,253 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         </div>
       </header>
 
-      <div className="max-w-[1600px] mx-auto flex">
-        {/* Sidebar con navegación por categorías */}
-        <aside
-          className={`${
-            sidebarOpen ? 'w-64' : 'w-0'
-          } transition-all duration-300 overflow-hidden lg:block fixed lg:sticky top-[65px] left-0 h-[calc(100vh-65px)] bg-slate-900/50 border-r border-slate-800 z-30`}
-        >
-          <nav className="p-4 space-y-4 overflow-y-auto h-full">
-            {Object.entries(tabsByCategory).map(([catKey, { info, tabs }]) => (
-              <div key={catKey}>
-                <button
-                  onClick={() => toggleCategory(catKey)}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
-                >
-                  <div>
-                    <div className="text-sm font-medium text-slate-200">{info.label}</div>
-                    <div className="text-xs text-slate-500">{info.description}</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Progress bar */}
+        {activeSession && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-slate-400">Progreso del Proyecto</h2>
+              <span className="text-sm text-slate-500">
+                Paso {currentStepIndex + 1} de {WORKFLOW_STEPS.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {WORKFLOW_STEPS.map((step, index) => (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      index < currentStepIndex
+                        ? 'bg-green-600/10 border border-green-600/30'
+                        : index === currentStepIndex
+                        ? 'bg-cyan-600/10 border border-cyan-600/30'
+                        : 'bg-slate-800/50 border border-slate-700/50'
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg ${
+                        index < currentStepIndex
+                          ? 'bg-green-600 text-white'
+                          : index === currentStepIndex
+                          ? 'bg-cyan-600 text-white'
+                          : 'bg-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {index < currentStepIndex ? (
+                        <CheckCircle2 className="w-5 h-5" />
+                      ) : (
+                        <span className="text-sm font-bold">{step.number}</span>
+                      )}
+                    </div>
+                    <div className="hidden sm:block">
+                      <div className={`text-sm font-medium ${
+                        index <= currentStepIndex ? 'text-white' : 'text-slate-400'
+                      }`}>
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-slate-500">{step.description}</div>
+                    </div>
                   </div>
-                  {expandedCategories.has(catKey) ? (
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  {index < WORKFLOW_STEPS.length - 1 && (
+                    <ChevronRight className="w-5 h-5 text-slate-600 mx-2 flex-shrink-0" />
                   )}
-                </button>
-
-                {expandedCategories.has(catKey) && (
-                  <div className="mt-1 space-y-0.5 pl-2">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          if (window.innerWidth < 1024) setSidebarOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                          activeTab === tab.id
-                            ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-600/30'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                        }`}
-                      >
-                        {tab.icon}
-                        <div className="text-left flex-1">
-                          <div className="font-medium">{tab.label}</div>
-                          <div className="text-xs text-slate-500">{tab.description}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-        </aside>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Contenido principal */}
-        <main className="flex-1 p-4 lg:p-6 min-w-0">
-          {/* Mensaje de integración */}
-          {initialPrompt && (
-            <div className="bg-cyan-900/20 border border-cyan-700/50 rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <GraduationCap className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-medium text-cyan-300">Importado desde Generador</span>
-              </div>
-              <p className="text-xs text-slate-300">
-                Prompt: <span className="text-cyan-200">{initialPrompt}</span>
-                {initialTrigger && (
-                  <> | Trigger: <span className="text-cyan-200 font-mono">{initialTrigger}</span></>
-                )}
-              </p>
-            </div>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Área de trabajo principal */}
+          <div className="lg:col-span-2">
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm">
+              {currentStep === 'start' && !activeSession && (
+                <div className="text-center py-12">
+                  <div className="bg-gradient-to-br from-cyan-500/10 to-blue-600/10 p-6 rounded-2xl inline-block mb-6">
+                    <GraduationCap className="w-16 h-16 text-cyan-400" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-3">Bienvenido a LoRA Pipeline Pro</h2>
+                  <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                    Te guiaremos paso a paso para crear tu primer modelo LoRA. 
+                    Es más fácil de lo que piensas.
+                  </p>
+                  <button
+                    onClick={handleStart}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium shadow-lg shadow-cyan-600/20 transition-all"
+                  >
+                    <Wand2 className="w-5 h-5" />
+                    Comenzar Ahora
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
 
-          {/* Contenido de la pestaña activa */}
-          <div className="min-h-[600px]">
-            {activeTab === 'progress' && <ProgressChecklist />}
-            {activeTab === 'dashboard' && <Dashboard />}
-            {activeTab === 'sessions' && (
-              <SessionHistory onNewSession={() => setShowNewSessionModal(true)} />
-            )}
-            {activeTab === 'pipeline' && (
-              <DatasetPipeline onComplete={() => setActiveTab('captions')} />
-            )}
-            {activeTab === 'captions' && (
-              <div className="space-y-6">
-                <BatchOperations />
-                <CaptionPreview
-                  onExport={handleExport}
-                  onBack={() => setActiveTab('pipeline')}
-                />
+              {currentStep === 'session' && (
+                <SessionHistory onNewSession={() => setCurrentStep('session')} />
+              )}
+
+              {currentStep === 'upload' && (
+                <DatasetPipeline onComplete={() => setCurrentStep('captions')} />
+              )}
+
+              {currentStep === 'captions' && (
+                <div className="space-y-6">
+                  <BatchOperations />
+                  <CaptionPreview
+                    onExport={handleExport}
+                    onBack={() => setCurrentStep('upload')}
+                  />
+                </div>
+              )}
+
+              {currentStep === 'plan' && <TrainingPlanner />}
+
+              {currentStep === 'export' && <KohyaConfigExporter />}
+            </div>
+
+            {/* Navegación de pasos */}
+            {activeSession && (
+              <div className="flex items-center justify-between mt-6">
+                <button
+                  onClick={() => {
+                    const currentIndex = WORKFLOW_STEPS.findIndex((s) => s.id === currentStep);
+                    if (currentIndex > 0) {
+                      setCurrentStep(WORKFLOW_STEPS[currentIndex - 1].id);
+                    }
+                  }}
+                  disabled={currentStep === 'session'}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Anterior
+                </button>
+                <button
+                  onClick={() => {
+                    const currentIndex = WORKFLOW_STEPS.findIndex((s) => s.id === currentStep);
+                    if (currentIndex < WORKFLOW_STEPS.length - 1) {
+                      setCurrentStep(WORKFLOW_STEPS[currentIndex + 1].id);
+                    }
+                  }}
+                  disabled={currentStep === 'export'}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             )}
-            {activeTab === 'templates' && <CaptionTemplates />}
-            {activeTab === 'metadata' && <MetadataExtractor />}
-            {activeTab === 'planner' && <TrainingPlanner />}
-            {activeTab === 'trigger' && <TriggerManager />}
-            {activeTab === 'export' && <KohyaConfigExporter />}
-            {activeTab === 'duplicates' && <DuplicateDetector />}
-            {activeTab === 'classimages' && <ClassImageGenerator />}
-            {activeTab === 'history' && <ChangeHistory />}
-            {activeTab === 'wordcloud' && <WordCloudAnalyzer />}
-            {activeTab === 'quality' && <QualityChecker />}
-            {activeTab === 'doctor' && <DatasetDoctor />}
-            {activeTab === 'photoguide' && <PhotoGuide />}
-            {activeTab === 'timer' && <TimeCalculator />}
-            {activeTab === 'glossary' && <InteractiveGlossary />}
-            {activeTab === 'mistakes' && <CommonMistakes />}
-            {activeTab === 'help' && <HelpCenter />}
-            {activeTab === 'backup' && <BackupRestore />}
-            {activeTab === 'report' && <FinalReport />}
-            {activeTab === 'recommender' && <SmartRecommender />}
           </div>
-        </main>
+
+          {/* Panel lateral de herramientas */}
+          <div className="lg:col-span-1">
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm sticky top-24">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-cyan-400" />
+                Herramientas de Ayuda
+              </h3>
+              <div className="space-y-2">
+                {TOOL_PANELS.map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => setShowToolPanel(tool.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                      showToolPanel === tool.id
+                        ? 'bg-cyan-600/10 border border-cyan-600/30 text-cyan-300'
+                        : 'bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-transparent'
+                    }`}
+                  >
+                    {tool.icon}
+                    <span className="text-sm font-medium">{tool.title}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Info del proyecto activo */}
+              {activeSession && (
+                <div className="mt-6 pt-6 border-t border-slate-800">
+                  <h4 className="text-sm font-medium text-slate-400 mb-3">Proyecto Activo</h4>
+                  <div className="bg-slate-800/50 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">Nombre</span>
+                      <span className="text-sm text-white font-medium">{activeSession.nombre_proyecto}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">Trigger</span>
+                      <span className="text-sm text-cyan-400 font-mono">{activeSession.trigger_word}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">Imágenes</span>
+                      <span className="text-sm text-white">{activeSession.captions_generados.length}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Atajos de teclado */}
-      <KeyboardShortcuts
-        onNavigate={(tab) => setActiveTab(tab as TabId)}
-        onValidateAll={handleExport}
-        onExport={handleExport}
-      />
+      {/* Panel de herramienta expandido */}
+      {showToolPanel && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+              <h2 className="text-xl font-bold text-white">
+                {TOOL_PANELS.find((t) => t.id === showToolPanel)?.title}
+              </h2>
+              <button
+                onClick={() => setShowToolPanel(null)}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {TOOL_PANELS.find((t) => t.id === showToolPanel)?.component}
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Tour Interactivo */}
-      <InteractiveTour
-        isOpen={showTour}
-        onClose={() => setShowTour(false)}
-        onNavigate={(tab) => setActiveTab(tab as TabId)}
-      />
+      {/* Modal de confirmación para limpiar */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-600/10 p-3 rounded-xl">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Limpiar Todo</h3>
+                <p className="text-sm text-slate-400">¿Estás seguro?</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300 mb-6">
+              Esto eliminará la sesión actual y todos los datos asociados. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleClear}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition-colors"
+              >
+                Sí, Limpiar
+              </button>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Wizard para Principiantes */}
-      <BeginnerWizard
-        isOpen={showWizard}
-        onClose={() => setShowWizard(false)}
-        onComplete={() => {
-          setShowWizard(false);
-          setActiveTab('sessions');
-        }}
-      />
-
-      {/* Export success toast */}
+      {/* Toast de éxito */}
       {exportSuccess && (
-        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce z-50">
+        <div className="fixed bottom-6 right-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce z-50">
           <CheckCircle2 className="w-5 h-5" />
-          <span className="font-medium">Dataset exportado exitosamente</span>
+          <span className="font-medium">¡Dataset exportado exitosamente!</span>
         </div>
       )}
 
@@ -454,59 +479,70 @@ function NewSessionModal({ onClose, onCreate, initialPrompt, initialTrigger }: N
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-        <h3 className="text-xl font-bold text-slate-100 mb-6">Nueva Sesión de Entrenamiento</h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg">
+        <h3 className="text-xl font-bold text-white mb-6">Crear Nueva Sesión</h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Nombre del Proyecto</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Nombre del Proyecto
+            </label>
             <input
               type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Mi LoRA de personaje"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500 transition-colors"
+              placeholder="Ej: Mi personaje favorito"
+              className="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
               required
               autoFocus
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Trigger Word</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Trigger Word
+            </label>
             <input
               type="text"
               value={triggerWord}
               onChange={(e) => setTriggerWord(e.target.value)}
-              placeholder="mytrigger"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 font-mono focus:outline-none focus:border-cyan-500 transition-colors"
+              placeholder="Ej: sks, ohwx, miestilo"
+              className="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
               required
             />
+            <p className="text-xs text-slate-500 mt-1">
+              Palabra única que representará tu concepto en los captions
+            </p>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Concepto Base</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Descripción del Concepto
+            </label>
             <textarea
               value={conceptoBase}
               onChange={(e) => setConceptoBase(e.target.value)}
-              placeholder="Describe el concepto que quieres entrenar..."
+              placeholder="Describe qué quieres entrenar..."
               rows={3}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 resize-none focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors resize-none"
               required
             />
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2.5 rounded-lg transition-colors"
-            >
-              Crear Sesión
-            </button>
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2.5 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
             >
               Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium shadow-lg shadow-cyan-600/20 transition-all"
+            >
+              Crear Sesión
             </button>
           </div>
         </form>
