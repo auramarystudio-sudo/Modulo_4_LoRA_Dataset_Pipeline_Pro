@@ -42,6 +42,7 @@ import {
   Image as ImageIcon,
   Palette,
   X,
+  Menu,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 
@@ -94,46 +95,46 @@ interface Tool {
 
 const TOOLS: Tool[] = [
   // MAIN
-  { id: 'progress', label: 'Progreso', icon: <CheckCircle2 className="w-4 h-4" />, component: <ProgressChecklist />, category: 'main' },
-  { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main' },
-  { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main' },
-  { id: 'captions', label: 'Captions', icon: <FileText className="w-4 h-4" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main' },
-  { id: 'planner', label: 'Planner', icon: <Calculator className="w-4 h-4" />, component: <TrainingPlanner />, category: 'main' },
-  { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-4 h-4" />, component: <KohyaConfigExporter />, category: 'main' },
+  { id: 'progress', label: 'Progreso', icon: <CheckCircle2 className="w-3 h-3" />, component: <ProgressChecklist />, category: 'main' },
+  { id: 'sessions', label: 'Sesiones', icon: <Database className="w-3 h-3" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main' },
+  { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-3 h-3" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main' },
+  { id: 'captions', label: 'Captions', icon: <FileText className="w-3 h-3" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main' },
+  { id: 'planner', label: 'Planner', icon: <Calculator className="w-3 h-3" />, component: <TrainingPlanner />, category: 'main' },
+  { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-3 h-3" />, component: <KohyaConfigExporter />, category: 'main' },
   
   // DATASET
-  { id: 'templates', label: 'Plantillas', icon: <Sparkles className="w-4 h-4" />, component: <CaptionTemplates />, category: 'dataset' },
-  { id: 'metadata', label: 'Metadata', icon: <Info className="w-4 h-4" />, component: <MetadataExtractor />, category: 'dataset' },
-  { id: 'trigger', label: 'Trigger', icon: <Hash className="w-4 h-4" />, component: <TriggerManager />, category: 'dataset' },
-  { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-4 h-4" />, component: <DuplicateDetector />, category: 'dataset' },
-  { id: 'classimages', label: 'Class Images', icon: <Target className="w-4 h-4" />, component: <ClassImageGenerator />, category: 'dataset' },
+  { id: 'templates', label: 'Plantillas', icon: <Sparkles className="w-3 h-3" />, component: <CaptionTemplates />, category: 'dataset' },
+  { id: 'metadata', label: 'Metadata', icon: <Info className="w-3 h-3" />, component: <MetadataExtractor />, category: 'dataset' },
+  { id: 'trigger', label: 'Trigger', icon: <Hash className="w-3 h-3" />, component: <TriggerManager />, category: 'dataset' },
+  { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-3 h-3" />, component: <DuplicateDetector />, category: 'dataset' },
+  { id: 'classimages', label: 'Class Images', icon: <Target className="w-3 h-3" />, component: <ClassImageGenerator />, category: 'dataset' },
   
   // TRAINING
-  { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, component: <QualityChecker />, category: 'training' },
-  { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, component: <ChangeHistory />, category: 'training' },
-  { id: 'backup', label: 'Backup', icon: <Save className="w-4 h-4" />, component: <BackupRestore />, category: 'training' },
-  { id: 'report', label: 'Reporte', icon: <FileText className="w-4 h-4" />, component: <FinalReport />, category: 'training' },
+  { id: 'quality', label: 'Calidad', icon: <Shield className="w-3 h-3" />, component: <QualityChecker />, category: 'training' },
+  { id: 'history', label: 'Historial', icon: <History className="w-3 h-3" />, component: <ChangeHistory />, category: 'training' },
+  { id: 'backup', label: 'Backup', icon: <Save className="w-3 h-3" />, component: <BackupRestore />, category: 'training' },
+  { id: 'report', label: 'Reporte', icon: <FileText className="w-3 h-3" />, component: <FinalReport />, category: 'training' },
   
   // ANALYSIS
-  { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" />, component: <Dashboard />, category: 'analysis' },
-  { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, component: <WordCloudAnalyzer />, category: 'analysis' },
-  { id: 'recommender', label: 'Recomendador', icon: <Lightbulb className="w-4 h-4" />, component: <SmartRecommender />, category: 'analysis' },
+  { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-3 h-3" />, component: <Dashboard />, category: 'analysis' },
+  { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-3 h-3" />, component: <WordCloudAnalyzer />, category: 'analysis' },
+  { id: 'recommender', label: 'Recomendador', icon: <Lightbulb className="w-3 h-3" />, component: <SmartRecommender />, category: 'analysis' },
   
   // HELP
-  { id: 'doctor', label: 'Dr. Dataset', icon: <AlertCircle className="w-4 h-4" />, component: <DatasetDoctor />, category: 'help' },
-  { id: 'photoguide', label: 'Foto Guía', icon: <Sparkles className="w-4 h-4" />, component: <PhotoGuide />, category: 'help' },
-  { id: 'timer', label: 'Calculadora', icon: <Calculator className="w-4 h-4" />, component: <TimeCalculator />, category: 'help' },
-  { id: 'glossary', label: 'Glosario', icon: <BookOpen className="w-4 h-4" />, component: <InteractiveGlossary />, category: 'help' },
-  { id: 'mistakes', label: 'Errores', icon: <AlertCircle className="w-4 h-4" />, component: <CommonMistakes />, category: 'help' },
-  { id: 'help', label: 'Ayuda', icon: <HelpCircle className="w-4 h-4" />, component: <HelpCenter />, category: 'help' },
+  { id: 'doctor', label: 'Dr. Dataset', icon: <AlertCircle className="w-3 h-3" />, component: <DatasetDoctor />, category: 'help' },
+  { id: 'photoguide', label: 'Foto Guía', icon: <Sparkles className="w-3 h-3" />, component: <PhotoGuide />, category: 'help' },
+  { id: 'timer', label: 'Calculadora', icon: <Calculator className="w-3 h-3" />, component: <TimeCalculator />, category: 'help' },
+  { id: 'glossary', label: 'Glosario', icon: <BookOpen className="w-3 h-3" />, component: <InteractiveGlossary />, category: 'help' },
+  { id: 'mistakes', label: 'Errores', icon: <AlertCircle className="w-3 h-3" />, component: <CommonMistakes />, category: 'help' },
+  { id: 'help', label: 'Ayuda', icon: <HelpCircle className="w-3 h-3" />, component: <HelpCenter />, category: 'help' },
 ];
 
 const CATEGORIES: Record<CategoryId, { label: string; icon: React.ReactNode; gradient: string }> = {
-  main: { label: 'Principal', icon: <Layers className="w-5 h-5" />, gradient: 'from-cyan-600 to-blue-600' },
-  dataset: { label: 'Dataset', icon: <Database className="w-5 h-5" />, gradient: 'from-blue-600 to-indigo-600' },
-  training: { label: 'Entrenamiento', icon: <Calculator className="w-5 h-5" />, gradient: 'from-purple-600 to-pink-600' },
-  analysis: { label: 'Análisis', icon: <BarChart3 className="w-5 h-5" />, gradient: 'from-green-600 to-emerald-600' },
-  help: { label: 'Ayuda', icon: <HelpCircle className="w-5 h-5" />, gradient: 'from-yellow-600 to-orange-600' },
+  main: { label: 'Principal', icon: <Layers className="w-4 h-4" />, gradient: 'from-cyan-600 to-blue-600' },
+  dataset: { label: 'Dataset', icon: <Database className="w-4 h-4" />, gradient: 'from-blue-600 to-indigo-600' },
+  training: { label: 'Entrenamiento', icon: <Calculator className="w-4 h-4" />, gradient: 'from-purple-600 to-pink-600' },
+  analysis: { label: 'Análisis', icon: <BarChart3 className="w-4 h-4" />, gradient: 'from-green-600 to-emerald-600' },
+  help: { label: 'Ayuda', icon: <HelpCircle className="w-4 h-4" />, gradient: 'from-yellow-600 to-orange-600' },
 };
 
 interface LoraTrainerProps {
@@ -149,6 +150,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
   const [showTour, setShowTour] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [menuCollapsed, setMenuCollapsed] = useState(false);
 
   const { activeSessionId, sessions, deleteSession, setActiveSession } = useLoraTrainerStore();
   const activeSession = sessions.find((s) => s.id === activeSessionId);
@@ -209,6 +211,14 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setMenuCollapsed(!menuCollapsed)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-slate-300 text-sm font-medium transition border border-slate-700/50"
+                title={menuCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
+              >
+                <Menu className="w-4 h-4" />
+                <span className="hidden lg:inline">{menuCollapsed ? 'Mostrar' : 'Ocultar'}</span>
+              </button>
+              <button
                 onClick={() => setShowWizard(true)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-medium transition shadow-lg"
               >
@@ -244,61 +254,63 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         </div>
       </header>
 
-      {/* 5 Botones de Categorías */}
-      <div className="max-w-[1800px] mx-auto px-6 py-4">
-        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 backdrop-blur-sm shadow-xl">
-          <div className="grid grid-cols-5 gap-2">
-            {(Object.entries(CATEGORIES) as [CategoryId, typeof CATEGORIES[CategoryId]][]).map(([catId, catInfo]) => (
-              <button
-                key={catId}
-                onClick={() => handleCategoryClick(catId)}
-                className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl text-sm font-medium transition ${
-                  activeCategory === catId
-                    ? `bg-gradient-to-br ${catInfo.gradient} text-white shadow-lg scale-105`
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                }`}
-              >
-                {catInfo.icon}
-                <span>{catInfo.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel desplegable con herramientas */}
-        {activeCategory && (
-          <div className="mt-4 bg-slate-900/50 border border-slate-800/50 rounded-2xl p-4 backdrop-blur-sm shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                {CATEGORIES[activeCategory].icon}
-                {CATEGORIES[activeCategory].label}
-              </h3>
-              <button
-                onClick={() => setActiveCategory(null)}
-                className="text-slate-500 hover:text-slate-300 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-              {toolsByCategory[activeCategory].tools.map((tool) => (
+      {/* Menú de Categorías - Colapsable */}
+      {!menuCollapsed && (
+        <div className="max-w-[1800px] mx-auto px-6 py-3">
+          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-2 backdrop-blur-sm shadow-xl">
+            <div className="grid grid-cols-5 gap-1.5">
+              {(Object.entries(CATEGORIES) as [CategoryId, typeof CATEGORIES[CategoryId]][]).map(([catId, catInfo]) => (
                 <button
-                  key={tool.id}
-                  onClick={() => handleToolClick(tool.id)}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
-                    activeTool === tool.id
-                      ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-600/30'
-                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
+                  key={catId}
+                  onClick={() => handleCategoryClick(catId)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    activeCategory === catId
+                      ? `bg-gradient-to-br ${catInfo.gradient} text-white shadow-lg`
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                   }`}
                 >
-                  {tool.icon}
-                  <span>{tool.label}</span>
+                  <div className="w-4 h-4">{catInfo.icon}</div>
+                  <span>{catInfo.label}</span>
                 </button>
               ))}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* Panel desplegable con herramientas */}
+          {activeCategory && (
+            <div className="mt-3 bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 backdrop-blur-sm shadow-xl">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                  <div className="w-3 h-3">{CATEGORIES[activeCategory].icon}</div>
+                  {CATEGORIES[activeCategory].label}
+                </h3>
+                <button
+                  onClick={() => setActiveCategory(null)}
+                  className="text-slate-500 hover:text-slate-300 transition"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1.5">
+                {toolsByCategory[activeCategory].tools.map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => handleToolClick(tool.id)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                      activeTool === tool.id
+                        ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-600/30'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
+                    }`}
+                  >
+                    <div className="w-3 h-3">{tool.icon}</div>
+                    <span>{tool.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Layout principal con sidebar contextual */}
       <div className="max-w-[1800px] mx-auto px-6 py-6">
