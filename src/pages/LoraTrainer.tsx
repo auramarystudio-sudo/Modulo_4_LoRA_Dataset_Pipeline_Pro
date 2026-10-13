@@ -36,6 +36,9 @@ import {
   Shield,
   BookOpen,
   Map,
+  Save,
+  FileText as ReportIcon,
+  Lightbulb,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
@@ -57,8 +60,11 @@ import KeyboardShortcuts from '../components/lora-trainer/KeyboardShortcuts';
 import InteractiveTour from '../components/lora-trainer/InteractiveTour';
 import HelpCenter from '../components/lora-trainer/HelpCenter';
 import BeginnerWizard from '../components/lora-trainer/BeginnerWizard';
+import BackupRestore from '../components/lora-trainer/BackupRestore';
+import FinalReport from '../components/lora-trainer/FinalReport';
+import SmartRecommender from '../components/lora-trainer/SmartRecommender';
 
-type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'help';
+type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'help' | 'backup' | 'report' | 'recommender';
 
 interface Tab {
   id: TabId;
@@ -83,6 +89,9 @@ const TABS: Tab[] = [
   { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, description: 'Análisis de palabras' },
   { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, description: 'Control de calidad' },
   { id: 'help', label: 'Ayuda', icon: <BookOpen className="w-4 h-4" />, description: 'Guía y glosario' },
+  { id: 'backup', label: 'Backup', icon: <Save className="w-4 h-4" />, description: 'Backup y restauración' },
+  { id: 'report', label: 'Reporte', icon: <ReportIcon className="w-4 h-4" />, description: 'Reporte final' },
+  { id: 'recommender', label: 'Recomendador', icon: <Lightbulb className="w-4 h-4" />, description: 'Sugerencias inteligentes' },
 ];
 
 interface LoraTrainerProps {
@@ -248,6 +257,9 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           {activeTab === 'wordcloud' && <WordCloudAnalyzer />}
           {activeTab === 'quality' && <QualityChecker />}
           {activeTab === 'help' && <HelpCenter />}
+          {activeTab === 'backup' && <BackupRestore />}
+          {activeTab === 'report' && <FinalReport />}
+          {activeTab === 'recommender' && <SmartRecommender />}
         </div>
 
         {/* Atajos de teclado */}
