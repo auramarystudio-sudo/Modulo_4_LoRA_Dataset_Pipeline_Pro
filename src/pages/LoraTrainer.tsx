@@ -29,6 +29,9 @@ import {
   BarChart3,
   Wand2,
   FileCode2,
+  Search,
+  Target,
+  History,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
@@ -41,8 +44,11 @@ import SessionHistory from '../components/lora-trainer/SessionHistory';
 import Dashboard from '../components/lora-trainer/Dashboard';
 import BatchOperations from '../components/lora-trainer/BatchOperations';
 import KohyaConfigExporter from '../components/lora-trainer/KohyaConfigExporter';
+import DuplicateDetector from '../components/lora-trainer/DuplicateDetector';
+import ClassImageGenerator from '../components/lora-trainer/ClassImageGenerator';
+import ChangeHistory from '../components/lora-trainer/ChangeHistory';
 
-type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export';
+type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history';
 
 interface Tab {
   id: TabId;
@@ -61,6 +67,9 @@ const TABS: Tab[] = [
   { id: 'planner', label: 'Planner', icon: <Calculator className="w-4 h-4" />, description: 'Calcular entrenamiento' },
   { id: 'trigger', label: 'Trigger', icon: <Hash className="w-4 h-4" />, description: 'Validar trigger word' },
   { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-4 h-4" />, description: 'Config Kohya_ss' },
+  { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-4 h-4" />, description: 'Detector de duplicados' },
+  { id: 'classimages', label: 'Class Images', icon: <Target className="w-4 h-4" />, description: 'Generador de prompts' },
+  { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, description: 'Cambios y undo/redo' },
 ];
 
 interface LoraTrainerProps {
@@ -200,6 +209,9 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           {activeTab === 'planner' && <TrainingPlanner />}
           {activeTab === 'trigger' && <TriggerManager />}
           {activeTab === 'export' && <KohyaConfigExporter />}
+          {activeTab === 'duplicates' && <DuplicateDetector />}
+          {activeTab === 'classimages' && <ClassImageGenerator />}
+          {activeTab === 'history' && <ChangeHistory />}
         </div>
 
         {/* Export success toast */}
