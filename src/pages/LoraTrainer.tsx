@@ -210,13 +210,26 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Botón hamburguesa con animación */}
               <button
                 onClick={() => setMenuCollapsed(!menuCollapsed)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-slate-300 text-sm font-medium transition border border-slate-700/50"
+                className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-slate-300 hover:text-white transition-all duration-300 border border-slate-700/50 group"
                 title={menuCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
               >
-                <Menu className="w-4 h-4" />
-                <span className="hidden lg:inline">{menuCollapsed ? 'Mostrar' : 'Ocultar'}</span>
+                <div className="relative w-4 h-4">
+                  {/* Línea superior */}
+                  <span className={`absolute left-0 top-0.5 w-4 h-0.5 bg-current transition-all duration-300 ${
+                    menuCollapsed ? 'rotate-0 translate-y-0' : 'rotate-45 translate-y-1'
+                  }`}></span>
+                  {/* Línea media */}
+                  <span className={`absolute left-0 top-1.5 w-4 h-0.5 bg-current transition-all duration-300 ${
+                    menuCollapsed ? 'opacity-100' : 'opacity-0'
+                  }`}></span>
+                  {/* Línea inferior */}
+                  <span className={`absolute left-0 bottom-0.5 w-4 h-0.5 bg-current transition-all duration-300 ${
+                    menuCollapsed ? 'rotate-0 translate-y-0' : '-rotate-45 -translate-y-1'
+                  }`}></span>
+                </div>
               </button>
               <button
                 onClick={() => setShowWizard(true)}
@@ -254,63 +267,80 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         </div>
       </header>
 
-      {/* Menú de Categorías - Colapsable */}
-      {!menuCollapsed && (
-        <div className="max-w-[1800px] mx-auto px-6 py-3">
-          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-2 backdrop-blur-sm shadow-xl">
-            <div className="grid grid-cols-5 gap-1.5">
-              {(Object.entries(CATEGORIES) as [CategoryId, typeof CATEGORIES[CategoryId]][]).map(([catId, catInfo]) => (
-                <button
-                  key={catId}
-                  onClick={() => handleCategoryClick(catId)}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition ${
-                    activeCategory === catId
-                      ? `bg-gradient-to-br ${catInfo.gradient} text-white shadow-lg`
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                  }`}
-                >
-                  <div className="w-4 h-4">{catInfo.icon}</div>
-                  <span>{catInfo.label}</span>
-                </button>
-              ))}
+      {/* Menú de Categorías - Colapsable con animación */}
+      <div className="max-w-[1800px] mx-auto px-6">
+        {menuCollapsed ? (
+          /* Indicador compacto cuando está cerrado */
+          <div className="py-3">
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-xl px-4 py-2 backdrop-blur-sm shadow-lg flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${
+                activeToolData ? CATEGORIES[activeToolData.category].gradient : 'from-cyan-600 to-blue-600'
+              } flex items-center justify-center`}>
+                {activeToolData?.icon && <div className="w-4 h-4 text-white">{activeToolData.icon}</div>}
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-slate-200">{activeToolData?.label || 'Progreso'}</div>
+                <div className="text-xs text-slate-500">Haz clic en ☰ para cambiar</div>
+              </div>
             </div>
           </div>
-
-          {/* Panel desplegable con herramientas */}
-          {activeCategory && (
-            <div className="mt-3 bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 backdrop-blur-sm shadow-xl">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                  <div className="w-3 h-3">{CATEGORIES[activeCategory].icon}</div>
-                  {CATEGORIES[activeCategory].label}
-                </h3>
-                <button
-                  onClick={() => setActiveCategory(null)}
-                  className="text-slate-500 hover:text-slate-300 transition"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1.5">
-                {toolsByCategory[activeCategory].tools.map((tool) => (
+        ) : (
+          /* Menú completo cuando está abierto */
+          <div className="py-3 space-y-3 transition-all duration-300 ease-in-out">
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-2 backdrop-blur-sm shadow-xl">
+              <div className="grid grid-cols-5 gap-1.5">
+                {(Object.entries(CATEGORIES) as [CategoryId, typeof CATEGORIES[CategoryId]][]).map(([catId, catInfo]) => (
                   <button
-                    key={tool.id}
-                    onClick={() => handleToolClick(tool.id)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
-                      activeTool === tool.id
-                        ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-600/30'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
-                    }`}
-                  >
-                    <div className="w-3 h-3">{tool.icon}</div>
-                    <span>{tool.label}</span>
+                    key={catId}
+                    onClick={() => handleCategoryClick(catId)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
+                    activeCategory === catId
+                      ? `bg-gradient-to-br ${catInfo.gradient} text-white shadow-lg scale-105`
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50 hover:scale-105'
+                  }`}                  >
+                    <div className="w-4 h-4">{catInfo.icon}</div>
+                    <span>{catInfo.label}</span>
                   </button>
                 ))}
               </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Panel desplegable con herramientas */}
+            {activeCategory && (
+              <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 backdrop-blur-sm shadow-xl transition-all duration-300 ease-in-out">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                    <div className="w-3 h-3">{CATEGORIES[activeCategory].icon}</div>
+                    {CATEGORIES[activeCategory].label}
+                  </h3>
+                  <button
+                    onClick={() => setActiveCategory(null)}
+                    className="text-slate-500 hover:text-slate-300 transition"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1.5">
+                  {toolsByCategory[activeCategory].tools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => handleToolClick(tool.id)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                        activeTool === tool.id
+                          ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-600/30 scale-105'
+                          : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50 hover:scale-105'
+                      }`}
+                    >
+                      <div className="w-3 h-3">{tool.icon}</div>
+                      <span>{tool.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Layout principal con sidebar contextual */}
       <div className="max-w-[1800px] mx-auto px-6 py-6">
