@@ -1,15 +1,14 @@
 /**
- * LoraTrainer - Layout con sidebar contextual
+ * LoraTrainer - Navegación simplificada 2 niveles
  * 
  * Glassmorphism Dark Pro v3.0
  * 
  * Estructura:
- * - Header compacto con acciones esenciales
- * - Pills horizontales por categoría
- * - Contenido principal (75% del ancho)
- * - Sidebar contextual complementario (25% del ancho)
- *   → NO compite con el sidebar principal del módulo padre
- *   → Muestra contexto, acciones rápidas e info del proyecto
+ * - Header compacto
+ * - 5 botones de categorías (Principal, Dataset, Entrenamiento, Análisis, Ayuda)
+ * - Panel desplegable con herramientas de la categoría seleccionada
+ * - Contenido principal (herramienta activa)
+ * - Sidebar contextual complementario
  */
 
 import { useState, useCallback } from 'react';
@@ -83,12 +82,14 @@ type ToolId =
   | 'dashboard' | 'wordcloud' | 'recommender'
   | 'doctor' | 'photoguide' | 'timer' | 'glossary' | 'mistakes' | 'help';
 
+type CategoryId = 'main' | 'dataset' | 'training' | 'analysis' | 'help';
+
 interface Tool {
   id: ToolId;
   label: string;
   icon: React.ReactNode;
   component: React.ReactNode;
-  category: 'main' | 'dataset' | 'training' | 'analysis' | 'help';
+  category: CategoryId;
 }
 
 const TOOLS: Tool[] = [
@@ -127,12 +128,12 @@ const TOOLS: Tool[] = [
   { id: 'help', label: 'Ayuda', icon: <HelpCircle className="w-4 h-4" />, component: <HelpCenter />, category: 'help' },
 ];
 
-const CATEGORIES = {
-  main: { label: 'Principal', color: 'bg-cyan-500' },
-  dataset: { label: 'Dataset', color: 'bg-blue-500' },
-  training: { label: 'Entrenamiento', color: 'bg-purple-500' },
-  analysis: { label: 'Análisis', color: 'bg-green-500' },
-  help: { label: 'Ayuda', color: 'bg-yellow-500' },
+const CATEGORIES: Record<CategoryId, { label: string; icon: React.ReactNode; gradient: string }> = {
+  main: { label: 'Principal', icon: <Layers className="w-5 h-5" />, gradient: 'from-cyan-600 to-blue-600' },
+  dataset: { label: 'Dataset', icon: <Database className="w-5 h-5" />, gradient: 'from-blue-600 to-indigo-600' },
+  training: { label: 'Entrenamiento', icon: <Calculator className="w-5 h-5" />, gradient: 'from-purple-600 to-pink-600' },
+  analysis: { label: 'Análisis', icon: <BarChart3 className="w-5 h-5" />, gradient: 'from-green-600 to-emerald-600' },
+  help: { label: 'Ayuda', icon: <HelpCircle className="w-5 h-5" />, gradient: 'from-yellow-600 to-orange-600' },
 };
 
 interface LoraTrainerProps {
@@ -141,51 +142,13 @@ interface LoraTrainerProps {
   onDatasetReady?: (triggerWord: string) => void;
 }
 
-// Presets por categoría
-const PRESETS = {
-  estilos: [
-    { id: 'retrato', name: 'Retrato Fotográfico', desc: 'Retrato profesional con iluminación de estudio', category: 'main' },
-    { id: 'paisaje', name: 'Paisaje Épico', desc: 'Paisajes épicos con iluminación natural', category: 'main' },
-    { id: 'anime', name: 'Personaje Anime', desc: 'Personajes de anime con detalles completos', category: 'main' },
-    { id: 'producto', name: 'Producto Comercial', desc: 'Fotografía de producto profesional', category: 'main' },
-    { id: 'cyberpunk', name: 'Ciudad Cyberpunk', desc: 'Escenas cyberpunk con ambiente noir', category: 'main' },
-  ],
-  boost: [
-    { id: 'calidad-alta', name: 'Calidad Alta', desc: '1024x1024, 50 steps, CFG 7', category: 'dataset' },
-    { id: 'rapido', name: 'Modo Rápido', desc: '512x512, 20 steps, CFG 5', category: 'dataset' },
-    { id: 'balanceado', name: 'Balanceado', desc: '768x768, 30 steps, CFG 6', category: 'dataset' },
-    { id: 'detallado', name: 'Ultra Detallado', desc: '1024x1024, 80 steps, CFG 8', category: 'dataset' },
-  ],
-  macros: [
-    { id: 'batch-caption', name: 'Batch Caption', desc: 'Generar captions para todas las imágenes', category: 'training' },
-    { id: 'validar-todo', name: 'Validar Todo', desc: 'Validar todos los captions automáticamente', category: 'training' },
-    { id: 'exportar-config', name: 'Exportar Config', desc: 'Generar configuración Kohya completa', category: 'training' },
-    { id: 'limpiar-metadata', name: 'Limpiar Metadata', desc: 'Eliminar metadatos innecesarios', category: 'training' },
-  ],
-  neg: [
-    { id: 'calidad', name: 'Análisis de Calidad', desc: 'Detectar imágenes de baja calidad', category: 'analysis' },
-    { id: 'duplicados', name: 'Buscar Duplicados', desc: 'Encontrar imágenes duplicadas', category: 'analysis' },
-    { id: 'wordcloud', name: 'Word Cloud', desc: 'Analizar palabras más frecuentes', category: 'analysis' },
-    { id: 'estadisticas', name: 'Estadísticas', desc: 'Ver estadísticas del dataset', category: 'analysis' },
-  ],
-  plant: [
-    { id: 'wizard', name: 'Wizard Completo', desc: 'Asistente paso a paso para principiantes', category: 'help' },
-    { id: 'glosario', name: 'Glosario', desc: 'Términos explicados fácilmente', category: 'help' },
-    { id: 'errores', name: 'Errores Comunes', desc: 'Qué evitar en el entrenamiento', category: 'help' },
-    { id: 'fotoguia', name: 'Foto Guía', desc: 'Cómo tomar buenas fotos', category: 'help' },
-  ],
-};
-
-type PresetCategory = 'estilos' | 'boost' | 'macros' | 'neg' | 'plant';
-
 export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetReady }: LoraTrainerProps) {
+  const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
   const [activeTool, setActiveTool] = useState<ToolId>('progress');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
-  const [activePresetCategory, setActivePresetCategory] = useState<PresetCategory | null>(null);
-  const [loadedPreset, setLoadedPreset] = useState<string | null>(null);
 
   const { activeSessionId, sessions, deleteSession, setActiveSession } = useLoraTrainerStore();
   const activeSession = sessions.find((s) => s.id === activeSessionId);
@@ -209,33 +172,28 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
     setShowClearConfirm(false);
   }, [activeSessionId, deleteSession, setActiveSession]);
 
-  const handleLoadPreset = useCallback((presetId: string, category: string) => {
-    setLoadedPreset(presetId);
-    // Navegar a la herramienta correspondiente según la categoría
-    const categoryMap: Record<string, ToolId> = {
-      main: 'progress',
-      dataset: 'pipeline',
-      training: 'planner',
-      analysis: 'dashboard',
-      help: 'help',
-    };
-    setActiveTool(categoryMap[category] || 'progress');
-    setActivePresetCategory(null);
-  }, []);
+  const handleCategoryClick = (catId: CategoryId) => {
+    setActiveCategory(activeCategory === catId ? null : catId);
+  };
+
+  const handleToolClick = (toolId: ToolId) => {
+    setActiveTool(toolId);
+    setActiveCategory(null);
+  };
 
   const toolsByCategory = Object.entries(CATEGORIES).reduce((acc, [catKey, catInfo]) => {
     const categoryTools = TOOLS.filter((tool) => tool.category === catKey);
     if (categoryTools.length > 0) {
-      acc[catKey] = { info: catInfo, tools: categoryTools };
+      acc[catKey as CategoryId] = { info: catInfo, tools: categoryTools };
     }
     return acc;
-  }, {} as Record<string, { info: typeof CATEGORIES[keyof typeof CATEGORIES]; tools: Tool[] }>);
+  }, {} as Record<CategoryId, { info: typeof CATEGORIES[CategoryId]; tools: Tool[] }>);
 
   const activeToolData = TOOLS.find((t) => t.id === activeTool);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      {/* Header compacto - Glassmorphism */}
+      {/* Header compacto */}
       <header className="border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl sticky top-0 z-40 shadow-lg">
         <div className="max-w-[1800px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
@@ -286,36 +244,60 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         </div>
       </header>
 
-      {/* Pills horizontales */}
-      <div className="max-w-[1800px] mx-auto px-6 py-4 border-b border-slate-800/50">
-        <div className="space-y-3">
-          {Object.entries(toolsByCategory).map(([catKey, { info, tools }]) => (
-            <div key={catKey}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-2 h-2 rounded-full ${info.color}`}></div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  {info.label}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tools.map((tool) => (
-                  <button
-                    key={tool.id}
-                    onClick={() => setActiveTool(tool.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                      activeTool === tool.id
-                        ? 'bg-slate-700 text-white shadow-lg'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
-                    }`}
-                  >
-                    {tool.icon}
-                    <span>{tool.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+      {/* 5 Botones de Categorías */}
+      <div className="max-w-[1800px] mx-auto px-6 py-4">
+        <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 backdrop-blur-sm shadow-xl">
+          <div className="grid grid-cols-5 gap-2">
+            {(Object.entries(CATEGORIES) as [CategoryId, typeof CATEGORIES[CategoryId]][]).map(([catId, catInfo]) => (
+              <button
+                key={catId}
+                onClick={() => handleCategoryClick(catId)}
+                className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl text-sm font-medium transition ${
+                  activeCategory === catId
+                    ? `bg-gradient-to-br ${catInfo.gradient} text-white shadow-lg scale-105`
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                }`}
+              >
+                {catInfo.icon}
+                <span>{catInfo.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Panel desplegable con herramientas */}
+        {activeCategory && (
+          <div className="mt-4 bg-slate-900/50 border border-slate-800/50 rounded-2xl p-4 backdrop-blur-sm shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                {CATEGORIES[activeCategory].icon}
+                {CATEGORIES[activeCategory].label}
+              </h3>
+              <button
+                onClick={() => setActiveCategory(null)}
+                className="text-slate-500 hover:text-slate-300 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+              {toolsByCategory[activeCategory].tools.map((tool) => (
+                <button
+                  key={tool.id}
+                  onClick={() => handleToolClick(tool.id)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition ${
+                    activeTool === tool.id
+                      ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-600/30'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
+                  }`}
+                >
+                  {tool.icon}
+                  <span>{tool.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Layout principal con sidebar contextual */}
@@ -328,122 +310,6 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
 
           {/* Sidebar contextual complementario (25%) */}
           <aside className="space-y-6">
-            {/* Quick Presets Panel */}
-            <div className="space-y-4">
-              {/* 5 botones de estilo */}
-              <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-2 backdrop-blur-sm shadow-xl">
-                <div className="grid grid-cols-5 gap-1">
-                  <button
-                    onClick={() => setActivePresetCategory(activePresetCategory === 'estilos' ? null : 'estilos')}
-                    className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-xs font-medium transition ${
-                      activePresetCategory === 'estilos'
-                        ? 'bg-gradient-to-br from-cyan-600 to-blue-600 text-white shadow-lg'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <Palette className="w-4 h-4" />
-                    <span>Estilos</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePresetCategory(activePresetCategory === 'boost' ? null : 'boost')}
-                    className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-xs font-medium transition ${
-                      activePresetCategory === 'boost'
-                        ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <Zap className="w-4 h-4" />
-                    <span>Boost</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePresetCategory(activePresetCategory === 'macros' ? null : 'macros')}
-                    className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-xs font-medium transition ${
-                      activePresetCategory === 'macros'
-                        ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <Type className="w-4 h-4" />
-                    <span>Macros</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePresetCategory(activePresetCategory === 'neg' ? null : 'neg')}
-                    className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-xs font-medium transition ${
-                      activePresetCategory === 'neg'
-                        ? 'bg-gradient-to-br from-green-600 to-emerald-600 text-white shadow-lg'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <X className="w-4 h-4" />
-                    <span>Neg</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePresetCategory(activePresetCategory === 'plant' ? null : 'plant')}
-                    className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl text-xs font-medium transition ${
-                      activePresetCategory === 'plant'
-                        ? 'bg-gradient-to-br from-yellow-600 to-orange-600 text-white shadow-lg'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                    }`}
-                  >
-                    <Layers className="w-4 h-4" />
-                    <span>Plant</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Panel desplegable con presets */}
-              {activePresetCategory && (
-                <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-4 backdrop-blur-sm shadow-xl space-y-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                      {activePresetCategory === 'estilos' && '🎨 Estilos'}
-                      {activePresetCategory === 'boost' && '⚡ Boost'}
-                      {activePresetCategory === 'macros' && '⚙️ Macros'}
-                      {activePresetCategory === 'neg' && '🔍 Análisis'}
-                      {activePresetCategory === 'plant' && '💡 Plantillas'}
-                    </h4>
-                    <button
-                      onClick={() => setActivePresetCategory(null)}
-                      className="text-slate-500 hover:text-slate-300 transition"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {PRESETS[activePresetCategory].map((preset) => (
-                    <div key={preset.id} className="p-4 rounded-lg bg-slate-800/30 border border-slate-700/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-slate-200">{preset.name}</span>
-                        <button
-                          onClick={() => handleLoadPreset(preset.id, preset.category)}
-                          className="text-xs px-3 py-1 rounded-lg bg-cyan-950/30 text-cyan-300 hover:bg-cyan-950/50 transition"
-                        >
-                          Cargar
-                        </button>
-                      </div>
-                      <p className="text-xs text-slate-500 truncate">{preset.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Preset cargado */}
-              {loadedPreset && (
-                <div className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-700/30 rounded-2xl p-4 backdrop-blur-sm shadow-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-semibold text-slate-300">Preset Cargado</span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    {PRESETS.estilos.find(p => p.id === loadedPreset)?.name ||
-                     PRESETS.boost.find(p => p.id === loadedPreset)?.name ||
-                     PRESETS.macros.find(p => p.id === loadedPreset)?.name ||
-                     PRESETS.neg.find(p => p.id === loadedPreset)?.name ||
-                     PRESETS.plant.find(p => p.id === loadedPreset)?.name}
-                  </p>
-                </div>
-              )}
-            </div>
-
             {/* Info del proyecto activo */}
             {activeSession && (
               <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
@@ -485,21 +351,21 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
               </h3>
               <div className="space-y-2">
                 <button
-                  onClick={() => setActiveTool('sessions')}
+                  onClick={() => handleToolClick('sessions')}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
                 >
                   <Database className="w-4 h-4" />
                   Nueva Sesión
                 </button>
                 <button
-                  onClick={() => setActiveTool('pipeline')}
+                  onClick={() => handleToolClick('pipeline')}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
                 >
                   <Layers className="w-4 h-4" />
                   Procesar Dataset
                 </button>
                 <button
-                  onClick={() => setActiveTool('planner')}
+                  onClick={() => handleToolClick('planner')}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
                 >
                   <Calculator className="w-4 h-4" />
@@ -598,7 +464,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
       <InteractiveTour
         isOpen={showTour}
         onClose={() => setShowTour(false)}
-        onNavigate={(tab) => setActiveTool(tab as ToolId)}
+        onNavigate={(tab) => handleToolClick(tab as ToolId)}
       />
 
       {/* Wizard Principiantes */}
@@ -607,13 +473,13 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         onClose={() => setShowWizard(false)}
         onComplete={() => {
           setShowWizard(false);
-          setActiveTool('sessions');
+          handleToolClick('sessions');
         }}
       />
 
       {/* Atajos de teclado */}
       <KeyboardShortcuts
-        onNavigate={(tab) => setActiveTool(tab as ToolId)}
+        onNavigate={(tab) => handleToolClick(tab as ToolId)}
         onValidateAll={handleExport}
         onExport={handleExport}
       />
