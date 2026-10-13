@@ -34,6 +34,8 @@ import {
   History,
   Type,
   Shield,
+  BookOpen,
+  Map,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
@@ -52,8 +54,11 @@ import ChangeHistory from '../components/lora-trainer/ChangeHistory';
 import WordCloudAnalyzer from '../components/lora-trainer/WordCloudAnalyzer';
 import QualityChecker from '../components/lora-trainer/QualityChecker';
 import KeyboardShortcuts from '../components/lora-trainer/KeyboardShortcuts';
+import InteractiveTour from '../components/lora-trainer/InteractiveTour';
+import HelpCenter from '../components/lora-trainer/HelpCenter';
+import BeginnerWizard from '../components/lora-trainer/BeginnerWizard';
 
-type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality';
+type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality' | 'help';
 
 interface Tab {
   id: TabId;
@@ -77,6 +82,7 @@ const TABS: Tab[] = [
   { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, description: 'Cambios y undo/redo' },
   { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, description: 'Análisis de palabras' },
   { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, description: 'Control de calidad' },
+  { id: 'help', label: 'Ayuda', icon: <BookOpen className="w-4 h-4" />, description: 'Guía y glosario' },
 ];
 
 interface LoraTrainerProps {
@@ -92,6 +98,8 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
   const [activeTab, setActiveTab] = useState<TabId>('sessions');
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   const {
     activeSessionId,
@@ -138,6 +146,24 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Botones de ayuda para principiantes */}
+            <button
+              onClick={() => setShowWizard(true)}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+              title="Asistente paso a paso para principiantes"
+            >
+              <Wand2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Mi Primer LoRA</span>
+            </button>
+            <button
+              onClick={() => setShowTour(true)}
+              className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm"
+              title="Tour interactivo por la interfaz"
+            >
+              <Map className="w-4 h-4" />
+              <span className="hidden sm:inline">Tour</span>
+            </button>
+
             {onDatasetReady && activeSession && (
               <button
                 onClick={handleDatasetReady}
@@ -221,6 +247,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           {activeTab === 'history' && <ChangeHistory />}
           {activeTab === 'wordcloud' && <WordCloudAnalyzer />}
           {activeTab === 'quality' && <QualityChecker />}
+          {activeTab === 'help' && <HelpCenter />}
         </div>
 
         {/* Atajos de teclado */}
@@ -228,6 +255,23 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           onNavigate={(tab) => setActiveTab(tab as TabId)}
           onValidateAll={handleExport}
           onExport={handleExport}
+        />
+
+        {/* Tour Interactivo */}
+        <InteractiveTour
+          isOpen={showTour}
+          onClose={() => setShowTour(false)}
+          onNavigate={(tab) => setActiveTab(tab as TabId)}
+        />
+
+        {/* Wizard para Principiantes */}
+        <BeginnerWizard
+          isOpen={showWizard}
+          onClose={() => setShowWizard(false)}
+          onComplete={() => {
+            setShowWizard(false);
+            setActiveTab('sessions');
+          }}
         />
 
         {/* Export success toast */}
