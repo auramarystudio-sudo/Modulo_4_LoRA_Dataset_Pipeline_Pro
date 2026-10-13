@@ -32,6 +32,8 @@ import {
   Search,
   Target,
   History,
+  Type,
+  Shield,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
@@ -47,8 +49,11 @@ import KohyaConfigExporter from '../components/lora-trainer/KohyaConfigExporter'
 import DuplicateDetector from '../components/lora-trainer/DuplicateDetector';
 import ClassImageGenerator from '../components/lora-trainer/ClassImageGenerator';
 import ChangeHistory from '../components/lora-trainer/ChangeHistory';
+import WordCloudAnalyzer from '../components/lora-trainer/WordCloudAnalyzer';
+import QualityChecker from '../components/lora-trainer/QualityChecker';
+import KeyboardShortcuts from '../components/lora-trainer/KeyboardShortcuts';
 
-type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history';
+type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export' | 'duplicates' | 'classimages' | 'history' | 'wordcloud' | 'quality';
 
 interface Tab {
   id: TabId;
@@ -70,6 +75,8 @@ const TABS: Tab[] = [
   { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-4 h-4" />, description: 'Detector de duplicados' },
   { id: 'classimages', label: 'Class Images', icon: <Target className="w-4 h-4" />, description: 'Generador de prompts' },
   { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, description: 'Cambios y undo/redo' },
+  { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, description: 'Análisis de palabras' },
+  { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, description: 'Control de calidad' },
 ];
 
 interface LoraTrainerProps {
@@ -212,7 +219,16 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
           {activeTab === 'duplicates' && <DuplicateDetector />}
           {activeTab === 'classimages' && <ClassImageGenerator />}
           {activeTab === 'history' && <ChangeHistory />}
+          {activeTab === 'wordcloud' && <WordCloudAnalyzer />}
+          {activeTab === 'quality' && <QualityChecker />}
         </div>
+
+        {/* Atajos de teclado */}
+        <KeyboardShortcuts
+          onNavigate={(tab) => setActiveTab(tab as TabId)}
+          onValidateAll={handleExport}
+          onExport={handleExport}
+        />
 
         {/* Export success toast */}
         {exportSuccess && (
