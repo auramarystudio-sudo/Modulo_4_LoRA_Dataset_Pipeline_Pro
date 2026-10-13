@@ -1,15 +1,15 @@
 /**
- * LoraTrainer - Glassmorphism Dark Pro v3.0
+ * LoraTrainer - Layout con sidebar contextual
  * 
- * Estilo oficial aplicado:
- * ✅ Glassmorphism con backdrop-blur
- * ✅ Dark mode profesional
- * ✅ Gradientes sutiles
- * ✅ Bordes con opacidad baja (/50)
- * ✅ Sombras profundas
- * ✅ Tipografía jerárquica
- * ✅ Transiciones suaves
- * ✅ Responsive design
+ * Glassmorphism Dark Pro v3.0
+ * 
+ * Estructura:
+ * - Header compacto con acciones esenciales
+ * - Pills horizontales por categoría
+ * - Contenido principal (75% del ancho)
+ * - Sidebar contextual complementario (25% del ancho)
+ *   → NO compite con el sidebar principal del módulo padre
+ *   → Muestra contexto, acciones rápidas e info del proyecto
  */
 
 import { useState, useCallback } from 'react';
@@ -38,8 +38,9 @@ import {
   Lightbulb,
   BarChart3,
   AlertCircle,
-  ArrowLeft,
-  Settings,
+  Zap,
+  Clock,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 
@@ -82,56 +83,54 @@ type ToolId =
 
 interface Tool {
   id: ToolId;
-  title: string;
-  description: string;
+  label: string;
   icon: React.ReactNode;
   component: React.ReactNode;
   category: 'main' | 'dataset' | 'training' | 'analysis' | 'help';
-  gradient: string;
 }
 
 const TOOLS: Tool[] = [
-  // MAIN - Cyan/Blue
-  { id: 'progress', title: 'Mi Progreso', description: 'Checklist paso a paso', icon: <CheckCircle2 className="w-8 h-8" />, component: <ProgressChecklist />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
-  { id: 'sessions', title: 'Sesiones', description: 'Gestionar proyectos', icon: <Database className="w-8 h-8" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
-  { id: 'pipeline', title: 'Pipeline', description: 'Procesar imágenes', icon: <Layers className="w-8 h-8" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
-  { id: 'captions', title: 'Captions', description: 'Revisar descripciones', icon: <FileText className="w-8 h-8" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
-  { id: 'planner', title: 'Planner', description: 'Configurar entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TrainingPlanner />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
-  { id: 'export', title: 'Exportar', description: 'Generar config Kohya', icon: <FileCode2 className="w-8 h-8" />, component: <KohyaConfigExporter />, category: 'main', gradient: 'from-cyan-500 to-blue-600' },
+  // MAIN
+  { id: 'progress', label: 'Progreso', icon: <CheckCircle2 className="w-4 h-4" />, component: <ProgressChecklist />, category: 'main' },
+  { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, component: <SessionHistory onNewSession={() => {}} />, category: 'main' },
+  { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, component: <DatasetPipeline onComplete={() => {}} />, category: 'main' },
+  { id: 'captions', label: 'Captions', icon: <FileText className="w-4 h-4" />, component: <div className="space-y-6"><BatchOperations /><CaptionPreview onExport={() => {}} onBack={() => {}} /></div>, category: 'main' },
+  { id: 'planner', label: 'Planner', icon: <Calculator className="w-4 h-4" />, component: <TrainingPlanner />, category: 'main' },
+  { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-4 h-4" />, component: <KohyaConfigExporter />, category: 'main' },
   
-  // DATASET - Blue/Indigo
-  { id: 'templates', title: 'Plantillas', description: 'Captions por categorías', icon: <Sparkles className="w-8 h-8" />, component: <CaptionTemplates />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
-  { id: 'metadata', title: 'Metadata', description: 'Info de imágenes PNG', icon: <Info className="w-8 h-8" />, component: <MetadataExtractor />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
-  { id: 'trigger', title: 'Trigger Word', description: 'Validar palabra clave', icon: <Hash className="w-8 h-8" />, component: <TriggerManager />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
-  { id: 'duplicates', title: 'Duplicados', description: 'Detectar imágenes duplicadas', icon: <Search className="w-8 h-8" />, component: <DuplicateDetector />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
-  { id: 'classimages', title: 'Class Images', description: 'Generar prompts de clase', icon: <Target className="w-8 h-8" />, component: <ClassImageGenerator />, category: 'dataset', gradient: 'from-blue-500 to-indigo-600' },
+  // DATASET
+  { id: 'templates', label: 'Plantillas', icon: <Sparkles className="w-4 h-4" />, component: <CaptionTemplates />, category: 'dataset' },
+  { id: 'metadata', label: 'Metadata', icon: <Info className="w-4 h-4" />, component: <MetadataExtractor />, category: 'dataset' },
+  { id: 'trigger', label: 'Trigger', icon: <Hash className="w-4 h-4" />, component: <TriggerManager />, category: 'dataset' },
+  { id: 'duplicates', label: 'Duplicados', icon: <Search className="w-4 h-4" />, component: <DuplicateDetector />, category: 'dataset' },
+  { id: 'classimages', label: 'Class Images', icon: <Target className="w-4 h-4" />, component: <ClassImageGenerator />, category: 'dataset' },
   
-  // TRAINING - Purple/Pink
-  { id: 'quality', title: 'Calidad', description: 'Control de calidad', icon: <Shield className="w-8 h-8" />, component: <QualityChecker />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
-  { id: 'history', title: 'Historial', description: 'Cambios y undo/redo', icon: <History className="w-8 h-8" />, component: <ChangeHistory />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
-  { id: 'backup', title: 'Backup', description: 'Guardar y restaurar', icon: <Save className="w-8 h-8" />, component: <BackupRestore />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
-  { id: 'report', title: 'Reporte', description: 'Reporte final', icon: <FileText className="w-8 h-8" />, component: <FinalReport />, category: 'training', gradient: 'from-purple-500 to-pink-600' },
+  // TRAINING
+  { id: 'quality', label: 'Calidad', icon: <Shield className="w-4 h-4" />, component: <QualityChecker />, category: 'training' },
+  { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, component: <ChangeHistory />, category: 'training' },
+  { id: 'backup', label: 'Backup', icon: <Save className="w-4 h-4" />, component: <BackupRestore />, category: 'training' },
+  { id: 'report', label: 'Reporte', icon: <FileText className="w-4 h-4" />, component: <FinalReport />, category: 'training' },
   
-  // ANALYSIS - Green/Emerald
-  { id: 'dashboard', title: 'Dashboard', description: 'Vista general', icon: <BarChart3 className="w-8 h-8" />, component: <Dashboard />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
-  { id: 'wordcloud', title: 'Word Cloud', description: 'Análisis de palabras', icon: <Type className="w-8 h-8" />, component: <WordCloudAnalyzer />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
-  { id: 'recommender', title: 'Recomendador', description: 'Sugerencias inteligentes', icon: <Lightbulb className="w-8 h-8" />, component: <SmartRecommender />, category: 'analysis', gradient: 'from-green-500 to-emerald-600' },
+  // ANALYSIS
+  { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" />, component: <Dashboard />, category: 'analysis' },
+  { id: 'wordcloud', label: 'Word Cloud', icon: <Type className="w-4 h-4" />, component: <WordCloudAnalyzer />, category: 'analysis' },
+  { id: 'recommender', label: 'Recomendador', icon: <Lightbulb className="w-4 h-4" />, component: <SmartRecommender />, category: 'analysis' },
   
-  // HELP - Yellow/Orange
-  { id: 'doctor', title: 'Dr. Dataset', description: 'Diagnóstico automático', icon: <AlertCircle className="w-8 h-8" />, component: <DatasetDoctor />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
-  { id: 'photoguide', title: 'Foto Guía', description: 'Cómo tomar fotos', icon: <Sparkles className="w-8 h-8" />, component: <PhotoGuide />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
-  { id: 'timer', title: 'Calculadora', description: 'Tiempo de entrenamiento', icon: <Calculator className="w-8 h-8" />, component: <TimeCalculator />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
-  { id: 'glossary', title: 'Glosario', description: 'Términos explicados', icon: <BookOpen className="w-8 h-8" />, component: <InteractiveGlossary />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
-  { id: 'mistakes', title: 'Errores Comunes', description: 'Qué evitar', icon: <AlertCircle className="w-8 h-8" />, component: <CommonMistakes />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
-  { id: 'help', title: 'Centro de Ayuda', description: 'Guía completa', icon: <HelpCircle className="w-8 h-8" />, component: <HelpCenter />, category: 'help', gradient: 'from-yellow-500 to-orange-600' },
+  // HELP
+  { id: 'doctor', label: 'Dr. Dataset', icon: <AlertCircle className="w-4 h-4" />, component: <DatasetDoctor />, category: 'help' },
+  { id: 'photoguide', label: 'Foto Guía', icon: <Sparkles className="w-4 h-4" />, component: <PhotoGuide />, category: 'help' },
+  { id: 'timer', label: 'Calculadora', icon: <Calculator className="w-4 h-4" />, component: <TimeCalculator />, category: 'help' },
+  { id: 'glossary', label: 'Glosario', icon: <BookOpen className="w-4 h-4" />, component: <InteractiveGlossary />, category: 'help' },
+  { id: 'mistakes', label: 'Errores', icon: <AlertCircle className="w-4 h-4" />, component: <CommonMistakes />, category: 'help' },
+  { id: 'help', label: 'Ayuda', icon: <HelpCircle className="w-4 h-4" />, component: <HelpCenter />, category: 'help' },
 ];
 
 const CATEGORIES = {
-  main: { label: '🎯 Principal', description: 'Flujo básico de trabajo' },
-  dataset: { label: '📁 Dataset', description: 'Preparación de datos' },
-  training: { label: '⚙️ Entrenamiento', description: 'Configuración avanzada' },
-  analysis: { label: '📊 Análisis', description: 'Herramientas de análisis' },
-  help: { label: '💡 Ayuda', description: 'Guías y recursos' },
+  main: { label: 'Principal', color: 'bg-cyan-500' },
+  dataset: { label: 'Dataset', color: 'bg-blue-500' },
+  training: { label: 'Entrenamiento', color: 'bg-purple-500' },
+  analysis: { label: 'Análisis', color: 'bg-green-500' },
+  help: { label: 'Ayuda', color: 'bg-yellow-500' },
 };
 
 interface LoraTrainerProps {
@@ -141,7 +140,7 @@ interface LoraTrainerProps {
 }
 
 export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetReady }: LoraTrainerProps) {
-  const [expandedTool, setExpandedTool] = useState<ToolId | null>(null);
+  const [activeTool, setActiveTool] = useState<ToolId>('progress');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
@@ -177,55 +176,54 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
     return acc;
   }, {} as Record<string, { info: typeof CATEGORIES[keyof typeof CATEGORIES]; tools: Tool[] }>);
 
-  const expandedToolData = TOOLS.find((t) => t.id === expandedTool);
+  const activeToolData = TOOLS.find((t) => t.id === activeTool);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-      {/* Header - Glassmorphism Dark Pro */}
+      {/* Header compacto - Glassmorphism */}
       <header className="border-b border-slate-800/50 bg-slate-900/90 backdrop-blur-xl sticky top-0 z-40 shadow-lg">
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
+        <div className="max-w-[1800px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                   LoRA Pipeline Pro
                 </h1>
-                <p className="text-xs text-slate-500">Glassmorphism Dark Pro v3.0</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowWizard(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-medium transition shadow-lg"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-medium transition shadow-lg"
               >
                 <Wand2 className="w-4 h-4" />
-                <span className="hidden md:inline">Wizard</span>
+                <span className="hidden lg:inline">Wizard</span>
               </button>
               <button
                 onClick={() => setShowTour(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition"
               >
                 <Map className="w-4 h-4" />
-                <span className="hidden md:inline">Tour</span>
+                <span className="hidden lg:inline">Tour</span>
               </button>
               <button
                 onClick={() => setShowClearConfirm(true)}
                 disabled={!activeSession}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-700/50 text-sm font-medium transition disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-700/50 text-sm font-medium transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden md:inline">Limpiar</span>
+                <span className="hidden lg:inline">Limpiar</span>
               </button>
               {onDatasetReady && activeSession && (
                 <button
                   onClick={handleDatasetReady}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-medium transition shadow-lg"
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-medium transition shadow-lg"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Dataset Listo</span>
+                  <span>Listo</span>
                 </button>
               )}
             </div>
@@ -233,56 +231,154 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         </div>
       </header>
 
-      {/* Contenido Principal */}
-      <div className="max-w-[1800px] mx-auto px-6 py-6">
-        {/* Vista expandida */}
-        {expandedTool && expandedToolData && (
-          <div className="space-y-6">
-            <button
-              onClick={() => setExpandedTool(null)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/50 transition"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Volver al dashboard</span>
-            </button>
-            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
-              {expandedToolData.component}
+      {/* Pills horizontales */}
+      <div className="max-w-[1800px] mx-auto px-6 py-4 border-b border-slate-800/50">
+        <div className="space-y-3">
+          {Object.entries(toolsByCategory).map(([catKey, { info, tools }]) => (
+            <div key={catKey}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-2 h-2 rounded-full ${info.color}`}></div>
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  {info.label}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tools.map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => setActiveTool(tool.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      activeTool === tool.id
+                        ? 'bg-slate-700 text-white shadow-lg'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-700/50'
+                    }`}
+                  >
+                    {tool.icon}
+                    <span>{tool.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
+      </div>
 
-        {/* Grid de tarjetas */}
-        {!expandedTool && (
-          <div className="space-y-8">
-            {Object.entries(toolsByCategory).map(([catKey, { info, tools }]) => (
-              <div key={catKey}>
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-slate-100">{info.label}</h2>
-                  <p className="text-sm text-slate-400">{info.description}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {tools.map((tool) => (
-                    <button
-                      key={tool.id}
-                      onClick={() => setExpandedTool(tool.id)}
-                      className="group bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl hover:border-slate-700/50 hover:shadow-2xl transition-all hover:scale-105"
-                    >
-                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br ${tool.gradient} text-white mb-4 shadow-lg group-hover:shadow-2xl transition`}>
-                        {tool.icon}
-                      </div>
-                      <h3 className="text-base font-bold text-slate-100 mb-1 group-hover:text-cyan-400 transition">
-                        {tool.title}
-                      </h3>
-                      <p className="text-sm text-slate-400">
-                        {tool.description}
-                      </p>
-                    </button>
-                  ))}
+      {/* Layout principal con sidebar contextual */}
+      <div className="max-w-[1800px] mx-auto px-6 py-6">
+        <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+          {/* Contenido principal (75%) */}
+          <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl min-h-[600px]">
+            {activeToolData?.component}
+          </div>
+
+          {/* Sidebar contextual complementario (25%) */}
+          <aside className="space-y-6">
+            {/* Info del proyecto activo */}
+            {activeSession && (
+              <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+                <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                  <Database className="w-4 h-4 text-cyan-400" />
+                  Proyecto Activo
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-slate-500 mb-1">Nombre</div>
+                    <div className="text-sm text-slate-200 font-medium">{activeSession.nombre_proyecto}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 mb-1">Trigger Word</div>
+                    <div className="text-sm text-cyan-400 font-mono bg-slate-800/50 px-2 py-1 rounded">{activeSession.trigger_word}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 mb-1">Imágenes</div>
+                    <div className="text-sm text-slate-200 flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-slate-400" />
+                      {activeSession.captions_generados.length}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500 mb-1">Estado</div>
+                    <div className="text-xs px-2 py-1 rounded-md bg-purple-950/50 text-purple-300 border border-purple-800/30 inline-block">
+                      {activeSession.estado}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            )}
+
+            {/* Acciones rápidas */}
+            <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+              <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                Acciones Rápidas
+              </h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setActiveTool('sessions')}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
+                >
+                  <Database className="w-4 h-4" />
+                  Nueva Sesión
+                </button>
+                <button
+                  onClick={() => setActiveTool('pipeline')}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
+                >
+                  <Layers className="w-4 h-4" />
+                  Procesar Dataset
+                </button>
+                <button
+                  onClick={() => setActiveTool('planner')}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-300 text-sm transition border border-slate-700/50"
+                >
+                  <Calculator className="w-4 h-4" />
+                  Planificar Entrenamiento
+                </button>
+              </div>
+            </div>
+
+            {/* Tips contextuales */}
+            <div className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-700/30 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+              <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-cyan-400" />
+                Tip del Día
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {activeSession 
+                  ? 'Revisa los captions antes de exportar. Un buen caption es la clave para un LoRA exitoso.'
+                  : 'Comienza creando una nueva sesión para definir tu proyecto de entrenamiento LoRA.'}
+              </p>
+            </div>
+
+            {/* Estado del dataset */}
+            {activeSession && (
+              <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+                <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-green-400" />
+                  Progreso
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Imágenes cargadas</span>
+                    <span className="text-slate-200">{activeSession.captions_generados.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Captions validados</span>
+                    <span className="text-slate-200">
+                      {activeSession.captions_generados.filter(c => c.validated).length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Pasos recomendados</span>
+                    <span className="text-slate-200">
+                      {activeSession.pasos_recomendados || 'No calculado'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </aside>
+        </div>
       </div>
 
       {/* Modal limpiar */}
@@ -331,7 +427,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
       <InteractiveTour
         isOpen={showTour}
         onClose={() => setShowTour(false)}
-        onNavigate={(tab) => setExpandedTool(tab as ToolId)}
+        onNavigate={(tab) => setActiveTool(tab as ToolId)}
       />
 
       {/* Wizard Principiantes */}
@@ -340,13 +436,13 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
         onClose={() => setShowWizard(false)}
         onComplete={() => {
           setShowWizard(false);
-          setExpandedTool('sessions');
+          setActiveTool('sessions');
         }}
       />
 
       {/* Atajos de teclado */}
       <KeyboardShortcuts
-        onNavigate={(tab) => setExpandedTool(tab as ToolId)}
+        onNavigate={(tab) => setActiveTool(tab as ToolId)}
         onValidateAll={handleExport}
         onExport={handleExport}
       />
