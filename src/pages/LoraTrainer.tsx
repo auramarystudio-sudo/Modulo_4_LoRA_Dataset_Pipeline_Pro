@@ -26,6 +26,9 @@ import {
   CheckCircle2,
   Layers,
   Sparkles,
+  BarChart3,
+  Wand2,
+  FileCode2,
 } from 'lucide-react';
 import { useLoraTrainerStore } from '../store/lora-trainer-store';
 import DatasetPipeline from '../components/lora-trainer/DatasetPipeline';
@@ -35,8 +38,11 @@ import MetadataExtractor from '../components/lora-trainer/MetadataExtractor';
 import TrainingPlanner from '../components/lora-trainer/TrainingPlanner';
 import TriggerManager from '../components/lora-trainer/TriggerManager';
 import SessionHistory from '../components/lora-trainer/SessionHistory';
+import Dashboard from '../components/lora-trainer/Dashboard';
+import BatchOperations from '../components/lora-trainer/BatchOperations';
+import KohyaConfigExporter from '../components/lora-trainer/KohyaConfigExporter';
 
-type TabId = 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger';
+type TabId = 'dashboard' | 'sessions' | 'pipeline' | 'captions' | 'templates' | 'metadata' | 'planner' | 'trigger' | 'export';
 
 interface Tab {
   id: TabId;
@@ -46,6 +52,7 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" />, description: 'Vista general' },
   { id: 'sessions', label: 'Sesiones', icon: <Database className="w-4 h-4" />, description: 'Gestión de sesiones' },
   { id: 'pipeline', label: 'Pipeline', icon: <Layers className="w-4 h-4" />, description: 'Ejecutar pipeline Python' },
   { id: 'captions', label: 'Captions', icon: <FileText className="w-4 h-4" />, description: 'Previsualizar y editar' },
@@ -53,6 +60,7 @@ const TABS: Tab[] = [
   { id: 'metadata', label: 'Metadata', icon: <Info className="w-4 h-4" />, description: 'PNG Info extraído' },
   { id: 'planner', label: 'Planner', icon: <Calculator className="w-4 h-4" />, description: 'Calcular entrenamiento' },
   { id: 'trigger', label: 'Trigger', icon: <Hash className="w-4 h-4" />, description: 'Validar trigger word' },
+  { id: 'export', label: 'Exportar', icon: <FileCode2 className="w-4 h-4" />, description: 'Config Kohya_ss' },
 ];
 
 interface LoraTrainerProps {
@@ -171,6 +179,7 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
 
         {/* Contenido de tabs */}
         <div className="min-h-[500px]">
+          {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'sessions' && (
             <SessionHistory onNewSession={() => setShowNewSessionModal(true)} />
           )}
@@ -178,15 +187,19 @@ export default function LoraTrainer({ initialPrompt, initialTrigger, onDatasetRe
             <DatasetPipeline onComplete={() => setActiveTab('captions')} />
           )}
           {activeTab === 'captions' && (
-            <CaptionPreview
-              onExport={handleExport}
-              onBack={() => setActiveTab('pipeline')}
-            />
+            <div className="space-y-6">
+              <BatchOperations />
+              <CaptionPreview
+                onExport={handleExport}
+                onBack={() => setActiveTab('pipeline')}
+              />
+            </div>
           )}
           {activeTab === 'templates' && <CaptionTemplates />}
           {activeTab === 'metadata' && <MetadataExtractor />}
           {activeTab === 'planner' && <TrainingPlanner />}
           {activeTab === 'trigger' && <TriggerManager />}
+          {activeTab === 'export' && <KohyaConfigExporter />}
         </div>
 
         {/* Export success toast */}
